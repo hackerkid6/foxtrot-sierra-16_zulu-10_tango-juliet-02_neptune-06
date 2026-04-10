@@ -1,0 +1,2792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>North Star</title>
+<style>
+:root{
+  --bg:#060c18;--surf:#0d1526;--surf2:#131e32;
+  --bdr:rgba(0,180,255,.18);--bdr2:rgba(0,180,255,.38);
+  --acc:#18c8ff;--acc2:rgba(24,200,255,.7);--acc3:rgba(24,200,255,.1);
+  --txt:#e8f4ff;--txt2:#a8c8e8;--txt3:#5a7a9a;
+  --red:#ff5c6a;--amber:#ffb020;--green:#3dde7a;
+  --r:12px;--rs:7px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;color-scheme:dark}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:-apple-system,'SF Pro Text','Helvetica Neue',sans-serif;overflow:hidden;font-size:15px}
+.mono{font-family:'SF Mono','Fira Code','Courier New',monospace}
+#app{display:flex;flex-direction:column;height:100vh;height:-webkit-fill-available}
+
+/* ── TOPBAR ── */
+#topbar{background:var(--surf);border-bottom:1px solid var(--bdr);flex-shrink:0;padding-top:env(safe-area-inset-top)}
+#topbar .logo-row{padding:10px 14px 4px;display:flex;align-items:center;gap:8px}
+.logo-text{font-size:13px;font-weight:700;letter-spacing:3px;color:#5efce8;text-transform:uppercase;font-family:'SF Mono','Fira Code',monospace}
+#nav-tabs{display:flex;overflow-x:auto;padding:0 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+#nav-tabs::-webkit-scrollbar{display:none}
+.nt{padding:0 13px;height:44px;display:flex;align-items:center;font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;color:var(--txt);border-bottom:2px solid transparent;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;opacity:.65;transition:color .15s,opacity .15s}
+.nt.active{color:var(--acc);border-bottom-color:var(--acc);opacity:1}
+
+/* ── CONTENT ── */
+#content{flex:1;overflow-y:auto;overflow-x:hidden;padding:14px 14px;padding-bottom:calc(20px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch}
+#content::-webkit-scrollbar{display:none}
+.page{display:none}.page.active{display:block}
+
+/* ── TYPOGRAPHY ── */
+.pg-title{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--acc);margin-bottom:2px;font-family:'SF Mono','Fira Code',monospace}
+.pg-sub{font-size:8px;color:var(--txt3);margin-bottom:14px}
+.sec-hd{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);margin:14px 0 6px}
+.pos{color:var(--green)}.neg{color:var(--red)}.amber{color:var(--amber)}
+
+/* ── CARDS ── */
+.card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:14px;margin-bottom:10px}
+
+/* ── METRIC TILES ── */
+.mg{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px}
+.mc{background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r);padding:12px 13px}
+.mc .ml{font-size:9px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;color:var(--txt3);margin-bottom:5px}
+.mc .mv{font-size:18px;font-weight:700;font-family:'SF Mono','Fira Code',monospace;letter-spacing:-.5px}
+
+/* ── BALANCE SHEET ── */
+.bs-sh{font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--acc);padding:6px 0;border-bottom:1px solid var(--bdr2);margin-bottom:4px}
+.bs-sub{font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--txt2);padding:5px 0 3px;margin-top:6px}
+.bsl{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--bdr);min-height:34px;gap:8px}
+.bsl.sub .bla{padding-left:14px;font-size:12px;color:var(--txt2)}
+.bsl.sub2 .bla{padding-left:24px;font-size:11.5px;color:var(--txt2)}
+.bsl.tot{border-top:1px solid var(--bdr2);border-bottom:1px solid var(--bdr2);margin-top:3px}
+.bsl.tot .bla,.bsl.tot .bam{font-weight:700;color:var(--txt);font-size:13px}
+.bsl.gtot{border-top:2px solid var(--acc);margin-top:6px;min-height:40px}
+.bsl.gtot .bla,.bsl.gtot .bam{font-weight:700;color:var(--txt);font-size:14px}
+.bla{font-size:13px;color:var(--txt);flex:1;padding-right:8px;line-height:1.4}
+.bam{font-weight:600;color:var(--txt);font-size:12.5px;min-width:75px;text-align:right;flex-shrink:0;font-family:'SF Mono','Fira Code',monospace;font-variant-numeric:tabular-nums}
+.bam.dim{color:var(--txt3);font-size:11.5px;opacity:.7}
+.nick{color:var(--acc2);font-size:10px;font-weight:500;display:inline;margin-left:4px;font-style:italic}
+.fnref{font-size:8px;vertical-align:super;color:var(--acc);margin-left:1px}
+.col-hdrs{display:flex;justify-content:flex-end;gap:0;margin-bottom:4px}
+.period-btn{font-size:8.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--acc);cursor:pointer;min-width:72px;text-align:right;padding:3px 4px;border-radius:4px}
+.period-btn:active{background:var(--acc3)}
+.period-btn.dim{color:var(--txt3)}
+.drill{cursor:pointer}
+.drill:active{background:var(--acc3);border-radius:4px}
+
+/* ── INCOME STATEMENT ── */
+.isl{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--bdr);min-height:34px}
+.isl .il{font-size:13px;color:var(--txt);flex:1;line-height:1.3}
+.isl .ia{font-size:12.5px;color:var(--txt);text-align:right;min-width:82px;font-family:'SF Mono','Fira Code',monospace;font-variant-numeric:tabular-nums;flex-shrink:0}
+.isl.sec-h{border-bottom:1px solid var(--bdr2);margin-top:10px}
+.isl.sec-h .il{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--acc)}
+.isl.tot{border-top:1px solid var(--bdr2);border-bottom:1px solid var(--bdr2);margin-top:3px}
+.isl.tot .il,.isl.tot .ia{font-weight:700;font-size:13.5px}
+.isl.net{border-top:2px solid var(--acc);margin-top:5px}
+.isl.net .il,.isl.net .ia{font-weight:800;color:var(--acc);font-size:15px}
+.isl.drill-row{cursor:pointer}
+.isl.drill-row:active{background:var(--acc3)}
+.isl.drill-row .il::after{content:' ›';color:var(--acc2);font-size:11px}
+.isl.drill-row .il{padding-left:12px}
+
+/* ── PILLS ── */
+.pills{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.pill{font-size:10px;font-weight:600;letter-spacing:.4px;padding:5px 11px;border-radius:20px;border:1px solid var(--bdr2);color:var(--txt2);cursor:pointer;white-space:nowrap}
+.pill.active{border-color:var(--acc);color:var(--acc);background:var(--acc3)}
+
+/* ── FORMS ── */
+input,select,textarea{background:var(--surf2);border:1px solid var(--bdr2);color:var(--txt);border-radius:var(--rs);padding:9px 11px;font-family:inherit;font-size:15px;width:100%;outline:none;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--acc)}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2300b4ff' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px}
+select option{background:var(--surf)}
+label{font-size:10px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--txt3);display:block;margin-bottom:4px}
+.fr{margin-bottom:12px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+/* ── BUTTONS ── */
+.btn{padding:8px 14px;border-radius:var(--rs);font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;font-family:inherit;border:1px solid var(--bdr2);background:transparent;color:var(--txt2);min-height:36px}
+.btn:active{opacity:.7}
+.btn-p{background:var(--acc3);border-color:var(--acc);color:var(--acc)}
+.btn-sm{padding:5px 10px;font-size:10px;min-height:30px}
+.btn-d{border-color:var(--red);color:var(--red)}
+
+/* ── TABLES ── */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.dt{width:100%;border-collapse:collapse;font-size:11.5px}
+table.dt th{font-size:8.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--txt3);padding:7px 5px;text-align:right;border-bottom:1px solid var(--bdr2);white-space:nowrap}
+table.dt th:first-child{text-align:left}
+table.dt td{padding:7px 5px;text-align:right;border-bottom:1px solid var(--bdr);color:var(--txt2);font-family:'SF Mono','Fira Code',monospace;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.dt td:first-child{text-align:left;color:var(--txt);font-family:inherit;white-space:normal}
+table.dt tr:active td{background:var(--surf2)}
+
+/* ── JOURNAL ENTRIES ── */
+.je-card{background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r);padding:12px;margin-bottom:8px}
+.je-card.pending{border-color:var(--amber)}
+.je-meta{display:flex;gap:7px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+.je-dt{font-size:10px;color:var(--acc);font-weight:600;font-family:'SF Mono','Fira Code',monospace}
+.je-ds{font-size:14px;color:var(--txt);font-weight:500;flex:1}
+.je-ln{display:flex;gap:5px;padding:4px 0;border-bottom:1px solid var(--bdr)}
+.je-ln:last-child{border-bottom:none}
+.je-ac{font-size:12px;color:var(--txt);flex:1}
+.je-dr{font-size:12px;color:var(--acc2);min-width:65px;text-align:right;font-family:'SF Mono','Fira Code',monospace}
+.je-cr{font-size:12px;color:var(--txt3);min-width:65px;text-align:right;font-family:'SF Mono','Fira Code',monospace}
+.badge{font-size:9px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;padding:2px 7px;border-radius:4px}
+.b-inc{background:rgba(61,222,122,.12);color:var(--green);border:1px solid rgba(61,222,122,.3)}
+.b-exp{background:rgba(255,92,106,.1);color:var(--red);border:1px solid rgba(255,92,106,.3)}
+.b-trn{background:rgba(0,180,255,.1);color:var(--acc);border:1px solid rgba(0,180,255,.3)}
+.b-ast{background:rgba(255,176,32,.1);color:var(--amber);border:1px solid rgba(255,176,32,.3)}
+.b-pnd{background:rgba(255,176,32,.15);color:var(--amber);border:1px solid rgba(255,176,32,.4)}
+
+/* ── INVESTMENTS ── */
+.inv-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:14px;margin-bottom:10px}
+.inv-acct-hd{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--acc);margin-bottom:10px}
+.inv-row{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--bdr);gap:10px}
+.inv-row:last-child{border-bottom:none}
+.inv-sym{font-size:15px;font-weight:700;color:var(--txt);font-family:'SF Mono','Fira Code',monospace}
+.inv-nr{text-align:right;flex-shrink:0}
+.live-dot-y{font-size:7.5px;color:var(--green)}
+.live-dot-n{font-size:7.5px;color:var(--txt3)}
+
+/* ── KV GRID ── */
+.kv-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.kv{background:var(--surf2);border-radius:var(--r);padding:10px 12px}
+.kv .kl{font-size:9px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--txt3);margin-bottom:3px}
+.kv .kv2{font-size:14px;color:var(--txt);font-family:'SF Mono','Fira Code',monospace;font-weight:600}
+
+/* ── MODALS ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);display:flex;align-items:flex-end;justify-content:center;z-index:100;padding:0}
+.overlay.h{display:none}
+.mbox{background:var(--surf);border:1px solid var(--bdr2);border-radius:20px 20px 0 0;padding:20px 18px;padding-bottom:calc(20px + env(safe-area-inset-bottom));width:100%;max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.mbox::-webkit-scrollbar{display:none}
+.mt-hd{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--acc);margin-bottom:14px;font-family:'SF Mono','Fira Code',monospace}
+.ma{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.jbl{display:flex;gap:6px;align-items:center;margin-bottom:5px}
+.jbl select{flex:2}.jbl input{flex:1;font-size:14px}
+
+/* ── MISC ── */
+.fb{display:flex;justify-content:space-between;align-items:center}
+.mb{margin-bottom:12px}
+.mt{margin-top:14px}
+.empty{text-align:center;padding:40px 16px;color:var(--txt3);font-size:13px}
+.alert-i{padding:10px 12px;border-radius:var(--rs);font-size:12px;margin-bottom:10px;background:var(--acc3);border:1px solid var(--bdr2);color:var(--acc);line-height:1.5}
+.alert-e{padding:10px 12px;border-radius:var(--rs);font-size:12px;margin-bottom:10px;background:rgba(255,92,106,.07);border:1px solid rgba(255,92,106,.25);color:var(--red);line-height:1.5}
+.prog{height:4px;background:var(--surf2);border-radius:2px;overflow:hidden;margin-top:5px}
+.progf{height:100%;background:var(--acc);border-radius:2px;transition:width .4s}
+.fn-item{font-size:12px;color:var(--txt2);line-height:1.7;margin-bottom:8px}
+.fn-item strong{color:var(--acc)}
+.tag{font-size:9px;padding:2px 6px;border-radius:3px;background:var(--acc3);color:var(--acc2);border:1px solid var(--bdr)}
+.computed-field{color:var(--acc2) !important;background:rgba(24,200,255,.05) !important;border-color:rgba(24,200,255,.25) !important}
+
+/* Period picker dropdown */
+#period-picker{position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.78)}
+.picker-box{background:var(--surf);border:1px solid var(--bdr2);border-radius:16px;padding:8px 0;min-width:200px;max-height:80vh;overflow-y:auto}
+.picker-opt{padding:13px 22px;font-size:13px;font-weight:600;color:var(--txt2);cursor:pointer}
+.picker-opt:active{background:var(--acc3)}
+.picker-opt.sel{color:var(--acc)}
+
+@media(max-width:375px){
+  .bam.dim{display:none}
+}
+
+@media print{
+  #topbar,#nav-tabs,.btn,.pills,.overlay,#bs-pending,#page-je,#page-inv,#page-al,#page-dep,#page-ml,#page-fn,#page-export{display:none!important}
+  #app{height:auto}
+  #content{overflow:visible;padding:8px}
+  .page{display:none!important}
+  #page-bs,#page-is{display:block!important}
+  body{background:#fff!important;color:#000!important;font-size:11px}
+  :root{--txt:#000;--txt2:#333;--txt3:#666;--bg:#fff;--surf:#f8f8f8;--surf2:#f0f0f0;--bdr:rgba(0,0,0,.2);--bdr2:rgba(0,0,0,.35);--acc:#0066cc;--green:#006600;--red:#cc0000}
+  .mc{border:1px solid #ccc;background:#f8f8f8}
+  .mv{font-size:14px!important}
+  .card{border:1px solid #ccc;background:#f8f8f8;margin-bottom:8px}
+  @page{margin:15mm;size:letter}
+}
+</style>
+</head>
+<body>
+<div id="app">
+<div id="topbar">
+  <div class="logo-row">
+    <div style="width:28px;height:28px;flex-shrink:0;border-radius:50%;border:1.5px solid #18c8ff;display:grid;grid-template-columns:8px 12px 8px;grid-template-rows:8px 12px 8px;align-items:center;justify-items:center">
+      <span style="grid-column:2;grid-row:1;font-size:6px;font-weight:900;color:#18c8ff;line-height:1;font-family:-apple-system,sans-serif">N</span>
+      <span style="grid-column:1;grid-row:2;font-size:5px;color:rgba(24,200,255,.5);line-height:1;font-family:-apple-system,sans-serif">W</span>
+      <span style="grid-column:2;grid-row:2;width:3px;height:3px;border-radius:50%;background:#18c8ff;display:block"></span>
+      <span style="grid-column:3;grid-row:2;font-size:5px;color:rgba(24,200,255,.5);line-height:1;font-family:-apple-system,sans-serif">E</span>
+      <span style="grid-column:2;grid-row:3;font-size:5px;color:rgba(24,200,255,.5);line-height:1;font-family:-apple-system,sans-serif">S</span>
+    </div>
+    <span class="logo-text">North Star</span>
+  </div>
+  <div id="nav-tabs">
+    <button class="nt active" data-pg="bs">Balance Sheet</button>
+    <button class="nt" data-pg="is">Income</button>
+    <button class="nt" data-pg="je">Journal</button>
+    <button class="nt" data-pg="inv">Investments</button>
+    <button class="nt" data-pg="al">Auto Loan</button>
+    <button class="nt" data-pg="dep">Depreciation</button>
+    <button class="nt" data-pg="ml">Mom Loan</button>
+    <button class="nt" data-pg="fn">Footnotes</button>
+    <button class="nt" data-pg="coa">Accounts</button>
+    <button class="nt" data-pg="export">Export</button>
+  </div>
+</div>
+<div id="content">
+
+<!-- ═══ BALANCE SHEET ════════════════════════════════════════ -->
+<div class="page active" id="page-bs">
+  <div class="fb mb" style="margin-bottom:2px">
+    <div class="pg-title">Jared Tucker — Balance Sheet</div>
+    <span style="font-size:8.5px;color:var(--txt3)" id="bs-asof"></span>
+  </div>
+  <div class="pg-sub">Fiscal Year Ended Dec. 31, 2026</div>
+  <div class="mg" id="bs-metrics"></div>
+  <div id="bs-body"></div>
+  <div class="card mt" id="bs-nw-card" style="display:none"></div>
+  <div id="bs-fns" style="margin-top:16px;padding-top:12px;border-top:1px solid var(--bdr)"></div>
+  <div id="bs-pending" style="display:none;margin-top:12px;background:rgba(255,176,32,.07);border:1px solid rgba(255,176,32,.3);border-radius:var(--r);padding:14px"></div>
+</div>
+
+<!-- ═══ INCOME STATEMENT ══════════════════════════════════════ -->
+<div class="page" id="page-is">
+  <div class="pg-title mb" style="margin-bottom:12px">Income Statement</div>
+  <div class="pills" id="is-pills">
+    <span class="pill active" data-p="ytd">YTD 2026</span>
+    <span class="pill" data-p="q1">Q1</span><span class="pill" data-p="q2">Q2</span>
+    <span class="pill" data-p="q3">Q3</span><span class="pill" data-p="q4">Q4</span>
+    <span class="pill" data-p="jan">Jan</span><span class="pill" data-p="feb">Feb</span>
+    <span class="pill" data-p="mar">Mar</span><span class="pill" data-p="apr">Apr</span>
+    <span class="pill" data-p="may">May</span><span class="pill" data-p="jun">Jun</span>
+    <span class="pill" data-p="jul">Jul</span><span class="pill" data-p="aug">Aug</span>
+    <span class="pill" data-p="sep">Sep</span><span class="pill" data-p="oct">Oct</span>
+    <span class="pill" data-p="nov">Nov</span><span class="pill" data-p="dec">Dec</span>
+  </div>
+  <div style="font-size:8.5px;color:var(--txt3);margin-bottom:10px">Tap any line to see supporting transactions</div>
+  <div id="is-content"></div>
+</div>
+
+<!-- ═══ JOURNAL ENTRIES ══════════════════════════════════════ -->
+<div class="page" id="page-je">
+  <div class="fb mb">
+    <div class="pg-title">Journal Entries</div>
+    <button class="btn btn-p btn-sm" id="btn-new-je">+ Entry</button>
+  </div>
+  <div class="pills" id="je-filters">
+    <span class="pill active" data-f="all">All</span>
+    <span class="pill" data-f="income">Income</span>
+    <span class="pill" data-f="expense">Expense</span>
+    <span class="pill" data-f="transfer">Transfer</span>
+    <span class="pill" data-f="pending">Pending</span>
+  </div>
+  <div id="je-list"></div>
+</div>
+
+<!-- ═══ INVESTMENTS ═══════════════════════════════════════════ -->
+<div class="page" id="page-inv">
+  <div class="fb mb">
+    <div class="pg-title">Investments</div>
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      <span id="price-status" style="font-size:8.5px;color:var(--txt3)">no prices</span>
+      <button class="btn btn-sm" onclick="fetchPrices()">⟳ Prices</button>
+      <button class="btn btn-sm" onclick="openWorkerSettings()">⚙ API</button>
+      <button class="btn btn-sm" onclick="openAddTicker()">+ Ticker</button>
+      <button class="btn btn-p btn-sm" onclick="openAddLot(null)">+ Lot</button>
+    </div>
+  </div>
+  <div id="inv-aoci-bar" class="alert-i" style="display:none"></div>
+  <div class="pills" id="inv-tabs">
+    <span class="pill active" data-t="positions">Positions</span>
+    <span class="pill" data-t="tickers">Tickers</span>
+    <span class="pill" data-t="disclosure">10-Q View</span>
+  </div>
+  <div id="inv-body"></div>
+</div>
+
+<!-- ═══ AUTO LOAN ════════════════════════════════════════════ -->
+<div class="page" id="page-al">
+  <div class="pg-title mb">Auto Loan — 2026 Kia K5</div>
+  <div class="kv-grid" id="al-kv"></div>
+  <div class="fb mb"><div class="sec-hd" style="margin:0">Payment History</div><button class="btn btn-p btn-sm" id="btn-al-pay">+ Payment</button></div>
+  <div class="tw"><table class="dt"><thead><tr><th style="text-align:left">Date</th><th>Pmt</th><th>Days</th><th>Interest</th><th>Principal</th><th>Balance</th></tr></thead><tbody id="al-body"></tbody></table></div>
+  <div class="prog mt"><div class="progf" id="al-prog"></div></div>
+  <div style="font-size:8px;color:var(--txt3);margin-top:3px;text-align:right" id="al-prog-lbl"></div>
+</div>
+
+<!-- ═══ DEPRECIATION ═════════════════════════════════════════ -->
+<div class="page" id="page-dep">
+  <div class="pg-title mb">Vehicle Depreciation — Straight-Line</div>
+  <div class="kv-grid" id="dep-kv"></div>
+  <div class="sec-hd">Schedule</div>
+  <div class="tw"><table class="dt"><thead><tr><th style="text-align:left">Period</th><th>Date</th><th>Dep. Expense</th><th>Accum. Dep.</th><th>Net Book Value</th></tr></thead><tbody id="dep-body"></tbody></table></div>
+</div>
+
+<!-- ═══ MOM LOAN ══════════════════════════════════════════════ -->
+<div class="page" id="page-ml">
+  <div class="pg-title mb">Mom Loan — Amortization</div>
+  <div class="kv-grid" id="ml-kv"></div>
+  <div class="fb mb"><div class="sec-hd" style="margin:0">Schedule</div><button class="btn btn-p btn-sm" id="btn-ml-pay">+ Payment</button></div>
+  <div class="tw"><table class="dt"><thead><tr><th style="text-align:left">Month</th><th>Pmt</th><th>Interest</th><th>Principal</th><th>Beg Bal</th><th>End Bal</th><th></th></tr></thead><tbody id="ml-body"></tbody></table></div>
+</div>
+
+<!-- ═══ FOOTNOTES ═════════════════════════════════════════════ -->
+<div class="page" id="page-fn">
+  <div class="fb mb">
+    <div class="pg-title">Footnotes</div>
+    <button class="btn btn-p btn-sm" id="btn-new-fn">+ Add</button>
+  </div>
+  <div id="fn-list"></div>
+</div>
+
+<!-- ═══ CHART OF ACCOUNTS ══════════════════════════════════════ -->
+<div class="page" id="page-coa">
+  <div class="fb mb">
+    <div class="pg-title">Chart of Accounts</div>
+    <button class="btn btn-p btn-sm" onclick="openAddAcct()">+ Account</button>
+  </div>
+  <div id="coa-body"></div>
+</div>
+
+<!-- ═══ EXPORT ════════════════════════════════════════════════ -->
+<div class="page" id="page-export">
+  <div class="pg-title mb" style="margin-bottom:14px">Export / Backup</div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--acc);margin-bottom:4px">Full Data Backup — JSON</div>
+    <div style="font-size:11px;color:var(--txt2);margin-bottom:12px">Exports the entire app state — all accounts, journal entries, balances, investments, loans. Use this for version control / change management.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-p" onclick="exportJSON('all')">⬇ Download Full Backup</button>
+      <button class="btn" onclick="exportJSON('je')">⬇ Journal Entries Only</button>
+      <button class="btn" onclick="exportJSON('balances')">⬇ Balances Only</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--acc);margin-bottom:4px">Export CSV</div>
+    <div style="font-size:11px;color:var(--txt2);margin-bottom:12px">Journal entries as a spreadsheet-compatible CSV file.</div>
+    <button class="btn btn-p" onclick="exportCSV()">⬇ Download CSV</button>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--acc);margin-bottom:4px">Print / Save as PDF</div>
+    <div style="font-size:11px;color:var(--txt2);margin-bottom:12px">Opens the browser print dialog. Choose "Save as PDF" as your printer. The balance sheet and income statement will render print-ready.</div>
+    <button class="btn btn-p" onclick="printReport()">🖨 Print / Save PDF</button>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--acc);margin-bottom:4px">Restore from Backup</div>
+    <div style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.6">Paste a previously exported JSON backup below. <span style="color:var(--red)">This will overwrite ALL current data.</span></div>
+    <textarea id="import-json" rows="4" placeholder='Paste exported JSON here…' style="font-size:11px;margin-bottom:8px"></textarea>
+    <button class="btn btn-d" onclick="importJSON()">⚠ Restore from JSON</button>
+    <div id="import-result" style="font-size:10px;margin-top:6px;height:16px"></div>
+  </div>
+
+  <div style="margin-top:16px;padding:12px;background:var(--surf2);border-radius:var(--r);font-size:10px;color:var(--txt3);line-height:1.7">
+    <strong style="color:var(--txt2)">Change Management Tips:</strong><br>
+    Download a full backup before making large changes. Store backups with date stamps (e.g., <code>northstar-2026-04-09.json</code>). The JSON contains everything needed to restore the app to any prior state.
+  </div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /app -->
+
+<!-- ═══ MODALS ════════════════════════════════════════════════ -->
+
+<!-- Drill-down -->
+<div class="overlay h" id="m-drill">
+  <div class="mbox" style="max-height:88vh">
+    <div class="fb mb"><div class="mt-hd" id="drill-title">Account</div><button class="btn btn-sm" onclick="document.getElementById('m-drill').classList.add('h')">✕</button></div>
+    <div id="drill-summary" style="margin-bottom:12px"></div>
+    <div id="drill-content"></div>
+  </div>
+</div>
+
+<!-- Journal Entry -->
+<div class="overlay h" id="m-je">
+  <div class="mbox">
+    <div class="mt-hd" id="je-modal-title">New Journal Entry</div>
+    <div class="fg">
+      <div class="fr"><label>Date</label><input type="date" id="je-dt" oninput="syncJEPeriod()"></div>
+      <div class="fr"><label>Category</label><select id="je-cat">
+        <option value="transfer">Transfer</option><option value="income">Income</option>
+        <option value="expense">Expense</option><option value="asset">Asset / Other</option>
+      </select></div>
+    </div>
+    <div class="fr"><label>Description</label><input type="text" id="je-ds" placeholder="e.g. Paycheck — BNY"></div>
+    <div class="fr"><label>Status</label><select id="je-status">
+      <option value="cleared">Cleared</option><option value="pending">Pending</option>
+    </select></div>
+    <div style="display:flex;gap:5px;margin-bottom:5px">
+      <span style="flex:2;font-size:8px;color:var(--txt3);text-transform:uppercase">Account</span>
+      <span style="flex:1;font-size:8px;color:var(--acc2);text-transform:uppercase">Debit</span>
+      <span style="flex:1;font-size:8px;color:var(--txt3);text-transform:uppercase">Credit</span>
+      <span style="width:28px"></span>
+    </div>
+    <div id="je-lines-builder"></div>
+    <button class="btn btn-sm" id="btn-addl" style="margin-bottom:10px">+ Line</button>
+    <div id="je-bal-check" style="display:none"></div>
+    <div class="ma"><button class="btn" id="btn-cxl-je">Cancel</button><button class="btn btn-d btn-sm" id="btn-del-je" style="margin-right:auto;display:none" onclick="deleteJEFromModal()">Delete Entry</button><button class="btn btn-p" id="btn-sv-je">Save Entry</button></div>
+  </div>
+</div>
+
+<!-- Add Lot (flexible) -->
+<div class="overlay h" id="m-lot">
+  <div class="mbox">
+    <div class="mt-hd" id="lot-title">Add Lot</div>
+    <div class="fg">
+      <div class="fr"><label>Ticker / Account</label><select id="lot-pos">
+        <option value="">— select position —</option>
+      </select></div>
+      <div class="fr"><label>Date</label><input type="date" id="lot-date"></div>
+    </div>
+    <div class="alert-i" style="font-size:10px;margin-bottom:10px;padding:8px 10px">Enter any <strong>two</strong> of the three fields — the third auto-calculates. Set all three to override total (e.g. for rounding).</div>
+    <div class="fg3">
+      <div class="fr">
+        <label>Shares</label>
+        <input type="number" id="lot-sh" step="0.0001" placeholder="0.0000" oninput="computeLot('sh')">
+        <div id="lot-sh-flag" style="font-size:8px;color:var(--acc2);margin-top:2px;height:12px"></div>
+      </div>
+      <div class="fr">
+        <label>Price / Share</label>
+        <input type="number" id="lot-pp" step="0.0001" placeholder="0.00" oninput="computeLot('pp')">
+        <div id="lot-pp-flag" style="font-size:8px;color:var(--acc2);margin-top:2px;height:12px"></div>
+      </div>
+      <div class="fr">
+        <label>Total Cost</label>
+        <input type="number" id="lot-tot" step="0.01" placeholder="0.00" oninput="computeLot('tot')">
+        <div id="lot-tot-flag" style="font-size:8px;color:var(--acc2);margin-top:2px;height:12px"></div>
+      </div>
+    </div>
+    <div class="fr"><label>Note (optional)</label><input type="text" id="lot-note" placeholder="ESPP, open market, etc."></div>
+    <div id="lot-summary" style="font-size:11px;color:var(--txt2);margin-bottom:8px;padding:8px 10px;background:var(--surf2);border-radius:6px;display:none"></div>
+    <div class="ma"><button class="btn" id="btn-cxl-lot">Cancel</button><button class="btn btn-p" id="btn-sv-lot">Add Lot</button></div>
+  </div>
+</div>
+
+<!-- Worker Settings -->
+<div class="overlay h" id="m-worker">
+  <div class="mbox">
+    <div class="mt-hd">Price API Settings</div>
+    <div class="alert-i" style="font-size:10px;margin-bottom:12px">Paste your Cloudflare Worker URL. The worker should accept <code>?symbols=VOO,IRM</code> and return <code>{"VOO":540.12,"IRM":109.45}</code>. Leave blank to skip live prices.</div>
+    <div class="fr"><label>Worker URL</label><input type="url" id="worker-url" placeholder="https://your-worker.workers.dev/prices"></div>
+    <div id="worker-test-result" style="font-size:10px;margin-top:6px;height:16px"></div>
+    <div class="ma"><button class="btn btn-sm" onclick="testWorker()">Test</button><button class="btn" id="btn-cxl-worker">Cancel</button><button class="btn btn-p" id="btn-sv-worker">Save</button></div>
+  </div>
+</div>
+
+<!-- Auto Loan Payment -->
+<div class="overlay h" id="m-al">
+  <div class="mbox">
+    <div class="mt-hd">Add Auto Loan Payment</div>
+    <div class="fg">
+      <div class="fr"><label>Date</label><input type="date" id="al-dt"></div>
+      <div class="fr"><label>Type</label><select id="al-tp"><option value="regular">Regular</option><option value="principal">Principal Only</option></select></div>
+    </div>
+    <div class="fr"><label>Amount</label><input type="number" id="al-amt" placeholder="490.70" step="0.01"></div>
+    <div id="al-prev" style="font-size:10px;color:var(--txt2);margin-top:5px;line-height:1.7"></div>
+    <div class="ma"><button class="btn" id="btn-cxl-al">Cancel</button><button class="btn btn-p" id="btn-sv-al">Record</button></div>
+  </div>
+</div>
+
+<!-- Mom Loan Payment -->
+<div class="overlay h" id="m-ml">
+  <div class="mbox">
+    <div class="mt-hd">Record Mom Loan Payment</div>
+    <div class="fg">
+      <div class="fr"><label>Month #</label><input type="number" id="ml-mn" min="1"></div>
+      <div class="fr"><label>Payment Date</label><input type="date" id="ml-dt"></div>
+    </div>
+    <div class="fg">
+      <div class="fr"><label>Type</label><select id="ml-tp"><option value="regular">Regular ($54.99)</option><option value="principal">Principal Only</option></select></div>
+      <div class="fr"><label>Pay From Account</label><select id="ml-acct">
+        <option value="boa">Bank of America</option>
+        <option value="pnc-sp">PNC — Spend</option>
+        <option value="pnc-re">PNC — Reserve</option>
+        <option value="pnc-gr">PNC — Growth</option>
+      </select></div>
+    </div>
+    <div class="fr" id="ml-amt-row" style="display:none"><label>Principal Amount</label><input type="number" id="ml-amt" step="0.01"></div>
+    <div id="ml-prev" style="font-size:10px;color:var(--txt2);margin-top:5px;line-height:1.7"></div>
+    <div class="ma"><button class="btn" id="btn-cxl-ml">Cancel</button><button class="btn btn-p" id="btn-sv-ml">Record</button></div>
+  </div>
+</div>
+
+<!-- Delete Warning -->
+<div class="overlay h" id="m-del-warn">
+  <div class="mbox" style="max-width:380px">
+    <div class="mt-hd" style="color:var(--red)">Delete Journal Entry?</div>
+    <div id="del-warn-body"></div>
+    <div class="ma" style="flex-wrap:wrap;gap:6px">
+      <button class="btn" onclick="document.getElementById('m-del-warn').classList.add('h')">Cancel</button>
+      <button class="btn btn-sm" id="btn-del-reverse" style="background:rgba(255,170,0,.1);border-color:var(--amber);color:var(--amber)">↩ Reversing Entry Instead</button>
+      <button class="btn btn-d" id="btn-del-confirm">Delete Permanently</button>
+    </div>
+  </div>
+</div>
+
+<!-- Account Add/Edit -->
+<div class="overlay h" id="m-acct">
+  <div class="mbox">
+    <div class="mt-hd" id="acct-modal-title">Add Account</div>
+    <div class="fg">
+      <div class="fr"><label>Account ID</label><input type="text" id="ac-id" placeholder="e.g. checking2"></div>
+      <div class="fr"><label>Name</label><input type="text" id="ac-nm" placeholder="e.g. Chase Checking"></div>
+    </div>
+    <div class="fg">
+      <div class="fr"><label>Nickname</label><input type="text" id="ac-nick" placeholder="optional"></div>
+      <div class="fr"><label>Type</label><select id="ac-type">
+        <option value="asset">Asset</option>
+        <option value="liability">Liability</option>
+        <option value="equity">Equity</option>
+        <option value="income">Income</option>
+        <option value="expense">Expense</option>
+      </select></div>
+    </div>
+    <div class="fg">
+      <div class="fr"><label>Normal Balance</label><select id="ac-nb">
+        <option value="debit">Debit</option>
+        <option value="credit">Credit</option>
+      </select></div>
+      <div class="fr"><label>BS Category</label><select id="ac-cat">
+        <option value="ca">Current Asset</option>
+        <option value="nca">Non-Current Asset</option>
+        <option value="oa">Other Asset</option>
+        <option value="cl">Current Liability</option>
+        <option value="ll">Long-Term Liability</option>
+        <option value="eq">Equity</option>
+        <option value="inc">Income</option>
+        <option value="exp">Expense</option>
+      </select></div>
+    </div>
+    <div class="fr"><label>Parent Account ID <span style="color:var(--txt3);font-weight:400">(leave blank for top-level)</span></label><input type="text" id="ac-par" placeholder="pnc, vehicle, bny401k…"></div>
+    <div class="ma"><button class="btn" id="btn-cxl-acct">Cancel</button><button class="btn btn-d btn-sm" id="btn-del-acct" style="margin-right:auto;display:none" onclick="deleteAcctFromModal()">Delete Account</button><button class="btn btn-p" id="btn-sv-acct">Save</button></div>
+  </div>
+</div>
+
+<!-- Account Add/Edit -->
+<div class="overlay h" id="m-ticker">
+  <div class="mbox">
+    <div class="mt-hd" id="ticker-modal-title">Add Ticker</div>
+    <div class="fg">
+      <div class="fr"><label>Symbol</label><input type="text" id="tk-sym" placeholder="VOO" style="text-transform:uppercase"></div>
+      <div class="fr"><label>Name</label><input type="text" id="tk-nm" placeholder="Vanguard S&amp;P 500 ETF"></div>
+    </div>
+    <div class="fr"><label>Price Source</label><select id="tk-src">
+      <option value="worker">Cloudflare Worker</option>
+      <option value="manual">Manual</option>
+    </select></div>
+    <div class="fr" id="tk-manual-row" style="display:none"><label>Manual Price ($)</label><input type="number" id="tk-manual-price" step="0.01"></div>
+    <div id="tk-preview" style="font-size:10px;color:var(--txt2);margin-top:4px;height:16px"></div>
+    <div class="ma">
+      <button class="btn" id="btn-cxl-ticker">Cancel</button>
+      <button class="btn btn-d btn-sm" id="btn-del-ticker" style="margin-right:auto;display:none" onclick="deleteTickerFromModal()">Delete</button>
+      <button class="btn btn-sm" onclick="testTickerPrice()" >Test Price</button>
+      <button class="btn btn-p" id="btn-sv-ticker">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Footnote -->
+<div class="overlay h" id="m-fn">
+  <div class="mbox">
+    <div class="mt-hd" id="fn-modal-title">Add Footnote</div>
+    <div class="fg">
+      <div class="fr"><label>Reference</label><input type="text" id="fn-rf" placeholder="(a), (b), Note 1…"></div>
+    </div>
+    <div class="fr"><label>Text</label><textarea id="fn-tx" rows="4" placeholder="Footnote description…"></textarea></div>
+    <div class="fr" style="flex-direction:column">
+      <label style="margin-bottom:6px">Tag to Balance Sheet Accounts</label>
+      <div id="fn-acct-list" style="max-height:200px;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px 0"></div>
+    </div>
+    <div class="ma"><button class="btn" id="btn-cxl-fn">Cancel</button><button class="btn btn-d btn-sm" id="btn-del-fn" style="margin-right:auto;display:none" onclick="deleteFnFromModal()">Delete</button><button class="btn btn-p" id="btn-sv-fn">Save</button></div>
+  </div>
+</div>
+
+<script>
+const SK='northstar_v10';
+let IS_PERIOD='ytd';
+let BS_L='today', BS_R='fy25';
+let INV_TAB='positions';
+let JE_FILTER='all';
+const LIVE_PRICES={};
+let WORKER_URL=localStorage.getItem('ns_worker_url')||'https://north-star-prices.je-tuck6.workers.dev/';
+
+// ─── DATA ────────────────────────────────────────────────────
+function defaultData(){
+const je=(id,date,period,desc,cat,lines,tags,status='cleared')=>({id,date,period,desc,cat,lines,tags,status});
+const ln=(aid,dr,cr)=>({aid,dr,cr});
+return{
+accounts:[
+  {id:'boa',name:'Bank of America',nick:'cash cow',type:'asset',nb:'debit',cat:'ca',par:null,fnt:[]},
+  {id:'pnc',name:'PNC Bank',nick:null,type:'asset',nb:'debit',cat:'ca',par:null,fnt:[]},
+  {id:'pnc-sp',name:'Spend',nick:'piggy bank',type:'asset',nb:'debit',cat:'ca',par:'pnc',fnt:[]},
+  {id:'pnc-re',name:'Reserve',nick:'rent & notes',type:'asset',nb:'debit',cat:'ca',par:'pnc',fnt:[]},
+  {id:'pnc-gr',name:'Growth',nick:'car loan reserve',type:'asset',nb:'debit',cat:'ca',par:'pnc',fnt:[]},
+  {id:'schwab',name:'Charles Schwab',nick:'jtmakesmillis',type:'asset',nb:'debit',cat:'ca',par:null,fnt:['(a)']},
+  {id:'coinbase',name:'Coinbase',nick:null,type:'asset',nb:'debit',cat:'ca',par:null,fnt:['(a)']},
+  {id:'cash',name:'Cash',nick:null,type:'asset',nb:'debit',cat:'ca',par:null,fnt:[]},
+  {id:'ar',name:'Accounts Receivable',nick:null,type:'asset',nb:'debit',cat:'ca',par:null,fnt:[]},
+  {id:'bny401k',name:'BNY 401(k) Savings Plan',nick:null,type:'asset',nb:'debit',cat:'nca',par:null,fnt:['(a)']},
+  {id:'bny401k-pt',name:'Pre-Tax Deferrals',nick:null,type:'asset',nb:'debit',cat:'nca',par:'bny401k',fnt:['(a)']},
+  {id:'bny401k-cm',name:'Company Match',nick:null,type:'asset',nb:'debit',cat:'nca',par:'bny401k',fnt:['(a)']},
+  {id:'vanguard',name:'Vanguard Roth IRA',nick:'MTM monthly',type:'asset',nb:'debit',cat:'nca',par:null,fnt:['(b)']},
+  {id:'marcus',name:'Marcus',nick:'rainy day',type:'asset',nb:'debit',cat:'nca',par:null,fnt:[]},
+  {id:'vehicle',name:'Vehicle – 2026 Kia K5',nick:'atlas',type:'asset',nb:'debit',cat:'nca',par:null,fnt:[]},
+  {id:'accum-dep',name:'Less: Accumulated Depreciation',nick:null,type:'asset',nb:'credit',cat:'nca',par:'vehicle',fnt:[]},
+  {id:'bny-espp',name:'Investments – BNY',nick:null,type:'asset',nb:'debit',cat:'oa',par:null,fnt:['(c)','(d)']},
+  {id:'value-card',name:'Value Card',nick:'parking',type:'asset',nb:'debit',cat:'oa',par:null,fnt:['(e)']},
+  {id:'discover',name:'Discover',nick:null,type:'liability',nb:'credit',cat:'cl',par:null,fnt:[]},
+  {id:'bilt',name:'Bilt',nick:null,type:'liability',nb:'credit',cat:'cl',par:null,fnt:[]},
+  {id:'wf',name:'Wells Fargo',nick:null,type:'liability',nb:'credit',cat:'cl',par:null,fnt:[]},
+  {id:'ap',name:'Accounts Payable',nick:null,type:'liability',nb:'credit',cat:'cl',par:null,fnt:[]},
+  {id:'auto-loan',name:'Auto Loan Payable',nick:null,type:'liability',nb:'credit',cat:'ll',par:null,fnt:[]},
+  {id:'notes-pay',name:'Notes Payable (Mom)',nick:null,type:'liability',nb:'credit',cat:'ll',par:null,fnt:[]},
+  {id:'retained',name:'Retained Earnings',nick:null,type:'equity',nb:'credit',cat:'eq',par:null,fnt:[]},
+  {id:'aoci',name:'AOCI — Unrealized G/L',nick:null,type:'equity',nb:'credit',cat:'eq',par:null,fnt:[]},
+  {id:'salary',name:'Salary / Wages',nick:null,type:'income',nb:'credit',cat:'inc',par:null,fnt:[]},
+  {id:'interest-inc',name:'Interest Income',nick:null,type:'income',nb:'credit',cat:'inc',par:null,fnt:[]},
+  {id:'div-inc',name:'Dividend Income',nick:null,type:'income',nb:'credit',cat:'inc',par:null,fnt:[]},
+  {id:'gain-sale',name:'Realized Gain on Sale',nick:null,type:'income',nb:'credit',cat:'inc',par:null,fnt:[]},
+  {id:'other-inc',name:'Other Income',nick:null,type:'income',nb:'credit',cat:'inc',par:null,fnt:[]},
+  {id:'rent',name:'Rent & Housing',nick:null,type:'expense',nb:'debit',cat:'exp',par:null,fnt:[]},
+  {id:'food',name:'Food & Dining',nick:null,type:'expense',nb:'debit',cat:'exp',par:null,fnt:[]},
+  {id:'rideshare',name:'Rideshare',nick:null,type:'expense',nb:'debit',cat:'exp',par:null,fnt:[]},
+  {id:'parking',name:'Parking',nick:null,type:'expense',nb:'debit',cat:'exp',par:null,fnt:[]},
+  {id:'shopping',name:'Shopping & Retail',nick:null,type:'expense',nb:'debit',cat:'exp',par:null,fnt:[]},
+  {id:'subscriptions',name:'Subscriptions',nick:null,type:'expense',nb:'debit',cat:'exp',par:null,fnt:[]},
+  {id:'ai-spend',name:'AI Spend',nick:null,type:'expense',nb:'debit',cat:'exp',par:null,fnt:[]},
+  {id:'entertainment',name:'Entertainment & Events',nick:null,type:'expense',nb:'debit',cat:'exp',par:null,fnt:[]},
+  {id:'gambling',name:'Gambling & Betting',nick:null,type:'expense',nb:'debit',cat:'exp',par:null,fnt:[]},
+  {id:'travel',name:'Travel',nick:null,type:'expense',nb:'debit',cat:'exp',par:null,fnt:[]},
+  {id:'personal',name:'Personal Care',nick:null,type:'expense',nb:'debit',cat:'exp',par:null,fnt:[]},
+  {id:'health',name:'Health & Fitness',nick:null,type:'expense',nb:'debit',cat:'exp',par:null,fnt:[]},
+  {id:'utilities',name:'Utilities',nick:null,type:'expense',nb:'debit',cat:'exp',par:null,fnt:[]},
+  {id:'fees',name:'Bank & Service Fees',nick:null,type:'expense',nb:'debit',cat:'exp',par:null,fnt:[]},
+  {id:'interest-exp',name:'Interest Expense',nick:null,type:'expense',nb:'debit',cat:'exp',par:null,fnt:[]},
+  {id:'loss-sale',name:'Loss on Sale / Unrealized',nick:null,type:'expense',nb:'debit',cat:'exp',par:null,fnt:[]},
+  {id:'dep-exp',name:'Depreciation Expense',nick:null,type:'expense',nb:'debit',cat:'exp',par:null,fnt:[]},
+  {id:'other-exp',name:'Other / Misc Expense',nick:null,type:'expense',nb:'debit',cat:'exp',par:null,fnt:[]},
+],
+balances:{
+  'boa':{c:2276.14,p:2013.05},'pnc-sp':{c:0,p:0},'pnc-re':{c:582.00,p:0.01},'pnc-gr':{c:0.78,p:0},
+  'schwab':{c:2423.71,p:2729.01},'coinbase':{c:223.25,p:223.25},'cash':{c:0,p:0},'ar':{c:0,p:0},
+  'bny401k-pt':{c:8846.55,p:7453.21},'bny401k-cm':{c:8324.82,p:2931.49},
+  'vanguard':{c:1326.68,p:425.07},'marcus':{c:16.66,p:21.90},
+  'vehicle':{c:32263.86,p:32263.86},'accum-dep':{c:-1613.19,p:0},
+  'bny-espp':{c:575.01,p:2856.96},'value-card':{c:150.00,p:150.00},
+  'discover':{c:984.26,p:7210.10},'bilt':{c:2750.39,p:994.74},'wf':{c:21.00,p:0},'ap':{c:0,p:1264.44},
+  'auto-loan':{c:25973.41,p:27284.75},'notes-pay':{c:2862.45,p:3000.00},
+  'retained':{c:0,p:0},'aoci':{c:0,p:0},
+  'salary':{c:0,p:0},'interest-inc':{c:0,p:0},'div-inc':{c:0,p:0},'gain-sale':{c:0,p:0},'other-inc':{c:0,p:0},
+  'rent':{c:0,p:0},'food':{c:0,p:0},'rideshare':{c:0,p:0},'parking':{c:0,p:0},
+  'shopping':{c:0,p:0},'subscriptions':{c:0,p:0},'ai-spend':{c:0,p:0},'entertainment':{c:0,p:0},
+  'gambling':{c:0,p:0},'travel':{c:0,p:0},'personal':{c:0,p:0},'health':{c:0,p:0},
+  'utilities':{c:0,p:0},'fees':{c:0,p:0},'interest-exp':{c:0,p:0},
+  'loss-sale':{c:0,p:0},'dep-exp':{c:0,p:0},'other-exp':{c:0,p:0},
+},
+journalEntries:[
+  je('je1','2026-01-04','2026-01',"FanDuel Deposit",'expense',[ln('gambling',28.05,0),ln('boa',0,28.05)],[],'cleared'),
+  je('je2','2026-01-04','2026-01',"FanDuel Deposit",'expense',[ln('gambling',35.0,0),ln('boa',0,35.0)],[],'cleared'),
+  je('je3','2026-01-05','2026-01',"PNC Reserve",'transfer',[ln('pnc-re',1150.0,0),ln('boa',0,1150.0)],[],'cleared'),
+  je('je4','2026-01-05','2026-01',"PNC Spend",'transfer',[ln('pnc-sp',199.99,0),ln('boa',0,199.99)],[],'cleared'),
+  je('je5','2026-01-15','2026-01',"BoA",'income',[ln('boa',1723.39,0),ln('salary',0,1723.39)],[],'cleared'),
+  je('je6','2026-01-18','2026-01',"PNC Reserve",'transfer',[ln('pnc-re',150.0,0),ln('boa',0,150.0)],[],'cleared'),
+  je('je7','2026-01-18','2026-01',"PNC Spend",'transfer',[ln('pnc-sp',213.88,0),ln('boa',0,213.88)],[],'cleared'),
+  je('je8','2026-01-18','2026-01',"Charles Schwab",'transfer',[ln('schwab',1000.0,0),ln('boa',0,1000.0)],[],'cleared'),
+  je('je9','2026-01-27','2026-01',"BoA",'transfer',[ln('boa',1955.0,0),ln('bny-espp',0,1955.0)],[],'cleared'),
+  je('je10','2026-01-29','2026-01',"PNC Spend",'transfer',[ln('pnc-sp',250.0,0),ln('boa',0,250.0)],[],'cleared'),
+  je('je11','2026-01-29','2026-01',"PNC Reserve",'transfer',[ln('pnc-re',675.0,0),ln('boa',0,675.0)],[],'cleared'),
+  je('je12','2026-01-29','2026-01',"PNC Growth",'transfer',[ln('pnc-gr',490.39,0),ln('boa',0,490.39)],[],'cleared'),
+  je('je13','2026-01-29','2026-01',"Marcus",'transfer',[ln('marcus',539.61,0),ln('boa',0,539.61)],[],'cleared'),
+  je('je14','2026-01-30','2026-01',"BoA",'income',[ln('boa',6306.16,0),ln('salary',0,6306.16)],[],'cleared'),
+  je('je15','2026-01-31','2026-01',"Venmo - Dehn Oliver",'expense',[ln('other-exp',10.0,0),ln('boa',0,10.0)],[],'cleared'),
+  je('je16','2026-01-05','2026-01',"PNC Spend",'transfer',[ln('pnc-sp',100.0,0),ln('other-exp',0,100.0)],[],'cleared'),
+  je('je17','2026-01-08','2026-01',"FanDuel Deposit",'expense',[ln('gambling',50.0,0),ln('pnc-sp',0,50.0)],[],'cleared'),
+  je('je18','2026-01-08','2026-01',"PNC Spend",'transfer',[ln('pnc-sp',50.0,0),ln('gambling',0,50.0)],[],'cleared'),
+  je('je19','2026-01-09','2026-01',"Zelle - D",'expense',[ln('other-exp',42.0,0),ln('pnc-sp',0,42.0)],[],'cleared'),
+  je('je20','2026-01-12','2026-01',"FanDuel Deposit",'expense',[ln('gambling',58.0,0),ln('pnc-sp',0,58.0)],[],'cleared'),
+  je('je21','2026-01-13','2026-01',"Uber Eats",'expense',[ln('food',50.0,0),ln('pnc-sp',0,50.0)],[],'cleared'),
+  je('je22','2026-01-14','2026-01',"Starbucks",'expense',[ln('food',30.0,0),ln('pnc-sp',0,30.0)],[],'cleared'),
+  je('je23','2026-01-14','2026-01',"PNC Spend",'transfer',[ln('pnc-sp',6.11,0),ln('food',0,6.11)],[],'cleared'),
+  je('je24','2026-01-15','2026-01',"United Airlines",'expense',[ln('travel',30.99,0),ln('pnc-sp',0,30.99)],[],'cleared'),
+  je('je25','2026-01-17','2026-01',"Cash",'transfer',[ln('cash',200.0,0),ln('pnc-sp',0,200.0)],[],'cleared'),
+  je('je26','2026-01-17','2026-01',"ATM Fee",'expense',[ln('fees',9.0,0),ln('pnc-sp',0,9.0)],[],'cleared'),
+  je('je27','2026-01-19','2026-01',"Kalshi",'expense',[ln('gambling',36.0,0),ln('pnc-sp',0,36.0)],[],'cleared'),
+  je('je28','2026-01-20','2026-01',"International ATM Fee",'expense',[ln('fees',5.0,0),ln('pnc-sp',0,5.0)],[],'cleared'),
+  je('je29','2026-01-21','2026-01',"Uber Eats",'expense',[ln('food',33.89,0),ln('pnc-sp',0,33.89)],[],'cleared'),
+  je('je30','2026-01-21','2026-01',"DoorDash",'expense',[ln('food',25.0,0),ln('pnc-sp',0,25.0)],[],'cleared'),
+  je('je31','2026-01-22','2026-01',"Costco",'expense',[ln('shopping',497.18,0),ln('pnc-sp',0,497.18)],[],'cleared'),
+  je('je32','2026-01-24','2026-01',"PNC Reserve",'transfer',[ln('pnc-re',157.81,0),ln('pnc-sp',0,157.81)],[],'cleared'),
+  je('je33','2026-01-28','2026-01',"Mom Loan — Month 1",'transfer',[ln('notes-pay',45.61,0),ln('interest-exp',9.38,0),ln('pnc-sp',0,54.99)],['notes-pay'],'cleared'),
+  je('je34','2026-01-30','2026-01',"PNC Spend",'income',[ln('pnc-sp',10.0,0),ln('other-inc',0,10.0)],[],'cleared'),
+  je('je35','2026-01-31','2026-01',"FanDuel Deposit",'expense',[ln('gambling',110.0,0),ln('pnc-sp',0,110.0)],[],'cleared'),
+  je('je36','2026-01-05','2026-01',"PNC Spend",'transfer',[ln('pnc-sp',0.01,0),ln('pnc-re',0,0.01)],[],'cleared'),
+  je('je37','2026-01-17','2026-01',"PNC Spend",'transfer',[ln('pnc-sp',150.0,0),ln('pnc-re',0,150.0)],[],'cleared'),
+  je('je38','2026-01-17','2026-01',"PNC Growth",'transfer',[ln('pnc-gr',500.0,0),ln('pnc-re',0,500.0)],[],'cleared'),
+  je('je39','2026-01-20','2026-01',"PNC Spend",'transfer',[ln('pnc-sp',4.88,0),ln('pnc-re',0,4.88)],[],'cleared'),
+  je('je40','2026-01-22','2026-01',"PNC Spend",'transfer',[ln('pnc-sp',500.0,0),ln('pnc-re',0,500.0)],[],'cleared'),
+  je('je41','2026-01-28','2026-01',"PNC Spend",'transfer',[ln('pnc-sp',54.99,0),ln('pnc-re',0,54.99)],[],'cleared'),
+  je('je42','2026-01-28','2026-01',"PNC Reserve",'transfer',[ln('pnc-re',8.99,0),ln('pnc-gr',0,8.99)],[],'cleared'),
+  je('je43','2026-01-31','2026-01',"PNC Growth",'income',[ln('pnc-gr',0.59,0),ln('interest-inc',0,0.59)],[],'cleared'),
+  je('je44','2026-02-28','2026-01',"PNC Growth",'income',[ln('pnc-gr',0.43,0),ln('interest-inc',0,0.43)],[],'cleared'),
+  je('je45','2026-01-05','2026-01',"Charles Schwab",'transfer',[ln('schwab',101.5,0),ln('gambling',0,101.5)],[],'cleared'),
+  je('je46','2026-01-06','2026-01',"Charles Schwab",'income',[ln('schwab',4.32,0),ln('div-inc',0,4.32)],[],'cleared'),
+  je('je47','2026-01-07','2026-01',"Charles Schwab",'transfer',[ln('schwab',292.5,0),ln('loss-sale',25.0,0),ln('schwab',0,317.5)],[],'cleared'),
+  je('je48','2026-01-20','2026-01',"Charles Schwab",'income',[ln('schwab',527.8,0),ln('gain-sale',0,167.8),ln('schwab',0,360.0)],[],'cleared'),
+  je('je49','2026-01-20','2026-01',"Charles Schwab",'income',[ln('schwab',188.41,0),ln('gain-sale',0,51.91),ln('schwab',0,136.5)],[],'cleared'),
+  je('je50','2026-01-21','2026-01',"Marcus",'transfer',[ln('marcus',677.08,0),ln('schwab',0,677.08)],[],'cleared'),
+  je('je51','2026-01-17','2026-01',"Taxi (Ritz to Windsong)",'expense',[ln('travel',20.0,0),ln('cash',0,20.0)],[],'cleared'),
+  je('je52','2026-01-18','2026-01',"Taxi (Windsong to Lemon 2 Go)",'expense',[ln('travel',20.0,0),ln('cash',0,20.0)],[],'cleared'),
+  je('je53','2026-01-18','2026-01',"Taxi (Lemon 2 Go to Windsong)",'expense',[ln('travel',20.0,0),ln('cash',0,20.0)],[],'cleared'),
+  je('je54','2026-01-18','2026-01',"Taxi (Windsong to Marine Room)",'expense',[ln('travel',20.0,0),ln('cash',0,20.0)],[],'cleared'),
+  je('je55','2026-01-18','2026-01',"Taxi (Marine Room to Windsong)",'expense',[ln('travel',20.0,0),ln('cash',0,20.0)],[],'cleared'),
+  je('je56','2026-01-19','2026-01',"Taxi (Windsong to Airport)",'expense',[ln('travel',30.0,0),ln('cash',0,30.0)],[],'cleared'),
+  je('je57','2026-01-21','2026-01',"GetGo - Lottery Tickets",'expense',[ln('gambling',70.0,0),ln('cash',0,70.0)],[],'cleared'),
+  je('je58','2026-01-15','2026-01',"BNY 401(k) - PT",'income',[ln('bny401k-pt',230.0,0),ln('salary',0,230.0)],[],'cleared'),
+  je('je59','2026-01-30','2026-01',"BNY 401(k) - PT",'income',[ln('bny401k-pt',230.0,0),ln('salary',0,230.0)],[],'cleared'),
+  je('je60','2026-01-28','2026-01',"BNY 401(k) - CM",'income',[ln('bny401k-cm',4643.33,0),ln('salary',0,4643.33)],[],'cleared'),
+  je('je61','2026-01-29','2026-01',"BNY 401(k) - CM",'income',[ln('bny401k-cm',750.0,0),ln('salary',0,750.0)],[],'cleared'),
+  je('je62','2026-01-31','2026-01',"Vanguard",'income',[ln('vanguard',12.85,0),ln('gain-sale',0,12.85)],[],'cleared'),
+  je('je63','2026-01-21','2026-01',"Marcus",'income',[ln('marcus',31.69,0),ln('other-inc',0,31.69)],[],'cleared'),
+  je('je64','2026-01-26','2026-01',"PNC Reserve",'transfer',[ln('pnc-re',347.07,0),ln('marcus',0,347.07)],[],'cleared'),
+  je('je65','2026-01-31','2026-01',"Marcus",'income',[ln('marcus',0.59,0),ln('interest-inc',0,0.59)],[],'cleared'),
+  je('je66','2026-01-31','2026-01',"Investments - BNY",'transfer',[ln('bny-espp',575.0,0),ln('salary',0,575.0)],[],'cleared'),
+  je('je67','2026-01-30','2026-01',"Investments - BNY",'income',[ln('bny-espp',0.03,0),ln('interest-inc',0,0.03)],[],'cleared'),
+  je('je68','2026-01-26','2026-01',"Investments - BNY",'income',[ln('bny-espp',1931.96,0),ln('gain-sale',0,206.93),ln('bny-espp',0,1725.03)],[],'cleared'),
+  je('je69','2026-01-01','2026-01',"Lyft",'expense',[ln('rideshare',13.29,0),ln('discover',0,13.29)],[],'cleared'),
+  je('je70','2026-01-01','2026-01',"Uber",'expense',[ln('rideshare',5.75,0),ln('discover',0,5.75)],[],'cleared'),
+  je('je71','2026-01-01','2026-01',"Uber",'expense',[ln('rideshare',49.19,0),ln('discover',0,49.19)],[],'cleared'),
+  je('je72','2026-01-01','2026-01',"Uber Eats",'expense',[ln('food',55.01,0),ln('discover',0,55.01)],[],'cleared'),
+  je('je73','2026-01-01','2026-01',"Mario’s East Side Saloon",'expense',[ln('other-exp',23.21,0),ln('discover',0,23.21)],[],'cleared'),
+  je('je74','2026-01-03','2026-01',"DoorDash Expense",'expense',[ln('food',33.45,0),ln('discover',0,33.45)],[],'cleared'),
+  je('je75','2026-01-04','2026-01',"Uber Eats",'expense',[ln('food',52.5,0),ln('discover',0,52.5)],[],'cleared'),
+  je('je76','2026-01-04','2026-01',"DoorDash Expense",'expense',[ln('food',52.0,0),ln('discover',0,52.0)],[],'cleared'),
+  je('je77','2026-01-05','2026-01',"Discover",'transfer',[ln('discover',600.01,0),ln('boa',0,600.01)],[],'cleared'),
+  je('je78','2026-01-05','2026-01',"Uber Eats",'expense',[ln('food',38.01,0),ln('discover',0,38.01)],[],'cleared'),
+  je('je79','2026-01-06','2026-01',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je80','2026-01-06','2026-01',"Uber Eats",'expense',[ln('food',50.02,0),ln('discover',0,50.02)],[],'cleared'),
+  je('je81','2026-01-07','2026-01',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je82','2026-01-07','2026-01',"Uber Eats",'expense',[ln('food',39.99,0),ln('discover',0,39.99)],[],'cleared'),
+  je('je83','2026-01-08','2026-01',"Vending Machine (BNY)",'expense',[ln('food',5.36,0),ln('discover',0,5.36)],[],'cleared'),
+  je('je84','2026-01-08','2026-01',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je85','2026-01-08','2026-01',"Milkshake Factory",'expense',[ln('food',23.24,0),ln('discover',0,23.24)],[],'cleared'),
+  je('je86','2026-01-09','2026-01',"Vending Machine (BNY)",'expense',[ln('food',3.59,0),ln('discover',0,3.59)],[],'cleared'),
+  je('je87','2026-01-09','2026-01',"BNY Café",'expense',[ln('food',10.89,0),ln('discover',0,10.89)],[],'cleared'),
+  je('je88','2026-01-09','2026-01',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je89','2026-01-09','2026-01',"Market District",'expense',[ln('food',41.26,0),ln('discover',0,41.26)],[],'cleared'),
+  je('je90','2026-01-10','2026-01',"Target",'expense',[ln('shopping',86.1,0),ln('discover',0,86.1)],[],'cleared'),
+  je('je91','2026-01-10','2026-01',"Lush",'expense',[ln('personal',57.78,0),ln('discover',0,57.78)],[],'cleared'),
+  je('je92','2026-01-10','2026-01',"Sephora",'expense',[ln('personal',41.73,0),ln('discover',0,41.73)],[],'cleared'),
+  je('je93','2026-01-10','2026-01',"GetGo",'expense',[ln('other-exp',6.62,0),ln('discover',0,6.62)],[],'cleared'),
+  je('je94','2026-01-11','2026-01',"Uber Eats",'expense',[ln('food',69.99,0),ln('discover',0,69.99)],[],'cleared'),
+  je('je95','2026-01-13','2026-01',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je96','2026-01-13','2026-01',"Uber One",'expense',[ln('subscriptions',9.99,0),ln('discover',0,9.99)],[],'cleared'),
+  je('je97','2026-01-14','2026-01',"CVS Pharmacy",'expense',[ln('personal',40.41,0),ln('discover',0,40.41)],[],'cleared'),
+  je('je98','2026-01-15','2026-01',"Uber",'expense',[ln('rideshare',63.96,0),ln('discover',0,63.96)],[],'cleared'),
+  je('je99','2026-01-15','2026-01',"Chick-Fil-A",'expense',[ln('food',12.56,0),ln('discover',0,12.56)],[],'cleared'),
+  je('je100','2026-01-15','2026-01',"Hudson Nonstop",'expense',[ln('travel',7.41,0),ln('discover',0,7.41)],[],'cleared'),
+  je('je101','2026-01-16','2026-01',"Interest Expense",'expense',[ln('interest-exp',99.07,0),ln('discover',0,99.07)],[],'cleared'),
+  je('je102','2026-01-15','2026-01',"Taxi (Windsong to Fish Fry)",'expense',[ln('travel',19.0,0),ln('discover',0,19.0)],[],'cleared'),
+  je('je103','2026-01-15','2026-01',"The Mojito Bar",'expense',[ln('travel',36.0,0),ln('discover',0,36.0)],[],'cleared'),
+  je('je104','2026-01-15','2026-01',"Kool Runnings Catering",'expense',[ln('other-exp',40.0,0),ln('discover',0,40.0)],[],'cleared'),
+  je('je105','2026-01-15','2026-01',"Dee’s Delight",'expense',[ln('travel',13.0,0),ln('discover',0,13.0)],[],'cleared'),
+  je('je106','2026-01-16','2026-01',"Island Scoop",'expense',[ln('travel',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je107','2026-01-18','2026-01',"Lemon 2 Go",'expense',[ln('travel',28.5,0),ln('discover',0,28.5)],[],'cleared'),
+  je('je108','2026-01-18','2026-01',"Island Organics",'expense',[ln('travel',84.0,0),ln('discover',0,84.0)],[],'cleared'),
+  je('je109','2026-01-18','2026-01',"Sandpits Bar Ltd",'expense',[ln('other-exp',35.0,0),ln('discover',0,35.0)],[],'cleared'),
+  je('je110','2026-01-18','2026-01',"Liquid Caicos Ltd",'expense',[ln('travel',90.0,0),ln('discover',0,90.0)],[],'cleared'),
+  je('je111','2026-01-18','2026-01',"Marine Room",'expense',[ln('travel',279.62,0),ln('discover',0,279.62)],[],'cleared'),
+  je('je112','2026-01-19','2026-01',"Windsong Resort",'expense',[ln('travel',55.0,0),ln('discover',0,55.0)],[],'cleared'),
+  je('je113','2026-01-19','2026-01',"Ready To Go",'expense',[ln('travel',15.18,0),ln('discover',0,15.18)],[],'cleared'),
+  je('je114','2026-01-19','2026-01',"IAD Express",'expense',[ln('travel',7.45,0),ln('discover',0,7.45)],[],'cleared'),
+  je('je115','2026-01-19','2026-01',"Uber",'expense',[ln('rideshare',58.33,0),ln('discover',0,58.33)],[],'cleared'),
+  je('je116','2026-01-20','2026-01',"Vending Machine (BNY)",'expense',[ln('food',7.84,0),ln('discover',0,7.84)],[],'cleared'),
+  je('je117','2026-01-20','2026-01',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je118','2026-01-21','2026-01',"Vending Machine (BNY)",'expense',[ln('food',6.07,0),ln('discover',0,6.07)],[],'cleared'),
+  je('je119','2026-01-21','2026-01',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je120','2026-01-21','2026-01',"GetGo",'expense',[ln('other-exp',9.92,0),ln('discover',0,9.92)],[],'cleared'),
+  je('je121','2026-01-22','2026-01',"Vending Machine (BNY)",'expense',[ln('food',4.3,0),ln('discover',0,4.3)],[],'cleared'),
+  je('je122','2026-01-22','2026-01',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je123','2026-01-23','2026-01',"BNY Café",'expense',[ln('food',11.28,0),ln('discover',0,11.28)],[],'cleared'),
+  je('je124','2026-01-23','2026-01',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je125','2026-01-24','2026-01',"Uber Eats",'expense',[ln('food',35.0,0),ln('discover',0,35.0)],[],'cleared'),
+  je('je126','2026-01-28','2026-01',"Uber",'expense',[ln('rideshare',50.68,0),ln('discover',0,50.68)],[],'cleared'),
+  je('je127','2026-01-28','2026-01',"Pittsburgh Port Authority",'expense',[ln('other-exp',2.75,0),ln('discover',0,2.75)],[],'cleared'),
+  je('je128','2026-01-28','2026-01',"Lyft",'expense',[ln('rideshare',23.93,0),ln('discover',0,23.93)],[],'cleared'),
+  je('je129','2026-01-29','2026-01',"Uber",'expense',[ln('rideshare',26.65,0),ln('discover',0,26.65)],[],'cleared'),
+  je('je130','2026-01-29','2026-01',"Lyft",'expense',[ln('rideshare',18.05,0),ln('discover',0,18.05)],[],'cleared'),
+  je('je131','2026-01-30','2026-01',"Uber",'expense',[ln('rideshare',38.08,0),ln('discover',0,38.08)],[],'cleared'),
+  je('je132','2026-01-30','2026-01',"Lyft",'expense',[ln('rideshare',18.94,0),ln('discover',0,18.94)],[],'cleared'),
+  je('je133','2026-01-30','2026-01',"DoorDash",'expense',[ln('food',28.0,0),ln('discover',0,28.0)],[],'cleared'),
+  je('je134','2026-01-31','2026-01',"Howl at the Moon",'expense',[ln('travel',150.0,0),ln('discover',0,150.0)],[],'cleared'),
+  je('je135','2026-01-03','2026-01',"Xbox - EA FC 26",'expense',[ln('subscriptions',1.06,0),ln('bilt',0,1.06)],[],'cleared'),
+  je('je136','2026-01-05','2026-01',"WSJ",'expense',[ln('subscriptions',13.9,0),ln('bilt',0,13.9)],[],'cleared'),
+  je('je137','2026-01-10','2026-01',"Apple",'expense',[ln('subscriptions',24.58,0),ln('bilt',0,24.58)],[],'cleared'),
+  je('je138','2026-01-11','2026-01',"Xbox Game Pass",'expense',[ln('subscriptions',9.99,0),ln('bilt',0,9.99)],[],'cleared'),
+  je('je139','2026-01-12','2026-01',"DoorDash",'expense',[ln('food',22.0,0),ln('bilt',0,22.0)],[],'cleared'),
+  je('je140','2026-01-13','2026-01',"Apple TV",'expense',[ln('subscriptions',13.97,0),ln('bilt',0,13.97)],[],'cleared'),
+  je('je141','2026-01-13','2026-01',"Peoples Gas",'expense',[ln('utilities',93.45,0),ln('bilt',0,93.45)],[],'cleared'),
+  je('je142','2026-01-13','2026-01',"Apple",'expense',[ln('subscriptions',2.99,0),ln('bilt',0,2.99)],[],'cleared'),
+  je('je143','2026-01-13','2026-01',"Hudson News",'expense',[ln('shopping',10.0,0),ln('bilt',0,10.0)],[],'cleared'),
+  je('je144','2026-01-16','2026-01',"Ring",'expense',[ln('subscriptions',10.69,0),ln('bilt',0,10.69)],[],'cleared'),
+  je('je145','2026-01-16','2026-01',"Lupo",'expense',[ln('food',84.67,0),ln('bilt',0,84.67)],[],'cleared'),
+  je('je146','2026-01-16','2026-01',"Amazon Prime",'expense',[ln('subscriptions',15.89,0),ln('bilt',0,15.89)],[],'cleared'),
+  je('je147','2026-01-18','2026-01',"Crest and Berry",'expense',[ln('food',26.4,0),ln('bilt',0,26.4)],[],'cleared'),
+  je('je148','2026-01-18','2026-01',"Bilt",'transfer',[ln('bilt',359.51,0),ln('boa',0,359.51)],[],'cleared'),
+  je('je149','2026-01-19','2026-01',"Microsoft 365",'expense',[ln('subscriptions',10.68,0),ln('bilt',0,10.68)],[],'cleared'),
+  je('je150','2026-01-20','2026-01',"Uber Eats",'expense',[ln('food',33.0,0),ln('bilt',0,33.0)],[],'cleared'),
+  je('je151','2026-01-28','2026-01',"LA Fitness",'expense',[ln('health',39.99,0),ln('bilt',0,39.99)],[],'cleared'),
+  je('je152','2026-01-28','2026-01',"Peoples Gas",'expense',[ln('utilities',115.85,0),ln('bilt',0,115.85)],[],'cleared'),
+  je('je153','2026-01-28','2026-01',"Rent + water expense",'expense',[ln('rent',604.0,0),ln('bilt',0,604.0)],[],'cleared'),
+  je('je154','2026-01-28','2026-01',"Bilt",'transfer',[ln('bilt',604.0,0),ln('pnc-re',0,604.0)],[],'cleared'),
+  je('je155','2026-01-30','2026-01',"YouTube TV",'expense',[ln('subscriptions',89.21,0),ln('bilt',0,89.21)],[],'cleared'),
+  je('je156','2026-01-19','2026-01',"True-Up (Turks & Caicos)",'expense',[ln('travel',150.0,0),ln('ap',0,150.0)],[],'cleared'),
+  je('je-td1','2026-01-19','2026-01',"True-Down (Turks & Caicos)",'transfer',[ln('ap',484.59,0),ln('other-exp',0,484.59)],[],'cleared'),
+  je('je157','2026-01-22','2026-01',"True-Down (Costco)",'transfer',[ln('ap',248.59,0),ln('other-exp',0,248.59)],[],'cleared'),
+  je('je-td2','2026-01-28','2026-01',"True-Down (People's Gas)",'transfer',[ln('ap',57.93,0),ln('utilities',0,57.93)],[],'cleared'),
+  je('je158','2026-02-03','2026-02',"Marcus",'transfer',[ln('marcus',2076.2,0),ln('boa',0,2076.2)],[],'cleared'),
+  je('je159','2026-02-13','2026-02',"BoA",'income',[ln('boa',1723.37,0),ln('salary',0,1723.37)],[],'cleared'),
+  je('je160','2026-02-02','2026-02',"Lyft",'expense',[ln('rideshare',17.97,0),ln('pnc-sp',0,17.97)],[],'cleared'),
+  je('je161','2026-02-02','2026-02',"DoorDash (Hannah)",'expense',[ln('food',30.0,0),ln('pnc-sp',0,30.0)],[],'cleared'),
+  je('je162','2026-02-03','2026-02',"DoorDash",'expense',[ln('food',18.03,0),ln('pnc-sp',0,18.03)],[],'cleared'),
+  je('je163','2026-02-04','2026-02',"PNC Spend",'transfer',[ln('pnc-sp',30.0,0),ln('other-exp',0,30.0)],[],'cleared'),
+  je('je164','2026-02-05','2026-02',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('pnc-sp',0,14.0)],[],'cleared'),
+  je('je165','2026-02-05','2026-02',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('pnc-sp',0,14.0)],[],'cleared'),
+  je('je166','2026-02-06','2026-02',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('pnc-sp',0,14.0)],[],'cleared'),
+  je('je167','2026-02-08','2026-02',"Venmo - Kalshi",'expense',[ln('other-exp',125.0,0),ln('pnc-sp',0,125.0)],[],'cleared'),
+  je('je168','2026-02-08','2026-02',"FanDuel Deposit",'expense',[ln('gambling',122.0,0),ln('pnc-sp',0,122.0)],[],'cleared'),
+  je('je169','2026-02-08','2026-02',"PNC Spend",'income',[ln('pnc-sp',16.04,0),ln('other-inc',0,16.04)],[],'cleared'),
+  je('je170','2026-02-08','2026-02',"PNC Spend",'transfer',[ln('pnc-sp',175.0,0),ln('pnc-re',0,175.0)],[],'cleared'),
+  je('je171','2026-02-14','2026-02',"Zelle - D",'expense',[ln('other-exp',42.0,0),ln('boa',0,42.0)],[],'cleared'),
+  je('je172','2026-02-27','2026-02',"BoA",'income',[ln('boa',1731.19,0),ln('salary',0,1731.19)],[],'cleared'),
+  je('je173','2026-02-14','2026-02',"PNC Spend",'transfer',[ln('pnc-sp',100.0,0),ln('other-exp',0,100.0)],[],'cleared'),
+  je('je174','2026-02-17','2026-02',"Uber Eats",'expense',[ln('food',26.04,0),ln('pnc-sp',0,26.04)],[],'cleared'),
+  je('je175','2026-02-17','2026-02',"DoorDash",'expense',[ln('food',25.0,0),ln('pnc-sp',0,25.0)],[],'cleared'),
+  je('je176','2026-02-18','2026-02',"Uber Eats",'expense',[ln('food',25.06,0),ln('pnc-sp',0,25.06)],[],'cleared'),
+  je('je177','2026-02-19','2026-02',"Uber Eats",'expense',[ln('food',32.51,0),ln('pnc-sp',0,32.51)],[],'cleared'),
+  je('je178','2026-02-26','2026-02',"PNC Reserve",'income',[ln('pnc-re',0.01,0),ln('interest-inc',0,0.01)],[],'cleared'),
+  je('je179','2026-02-13','2026-02',"BNY 401(k) - PT",'income',[ln('bny401k-pt',230.0,0),ln('salary',0,230.0)],[],'cleared'),
+  je('je180','2026-02-27','2026-02',"BNY 401(k) - PT",'income',[ln('bny401k-pt',230.0,0),ln('salary',0,230.0)],[],'cleared'),
+  je('je181','2026-02-22','2026-02',"Marcus",'income',[ln('marcus',20.66,0),ln('other-inc',0,20.66)],[],'cleared'),
+  je('je182','2026-02-05','2026-02',"Investments - BNY",'income',[ln('bny-espp',19.47,0),ln('div-inc',0,19.47)],[],'cleared'),
+  je('je183','2026-02-27','2026-02',"Investments - BNY",'income',[ln('bny-espp',0.02,0),ln('interest-inc',0,0.02)],[],'cleared'),
+  je('je184','2026-02-01','2026-02',"Uber Eats",'expense',[ln('food',30.0,0),ln('discover',0,30.0)],[],'cleared'),
+  je('je185','2026-02-02','2026-02',"Lyft",'expense',[ln('rideshare',12.27,0),ln('discover',0,12.27)],[],'cleared'),
+  je('je186','2026-02-05','2026-02',"Ritual House",'expense',[ln('food',22.0,0),ln('discover',0,22.0)],[],'cleared'),
+  je('je187','2026-02-06','2026-02',"BNY Café",'expense',[ln('food',14.97,0),ln('discover',0,14.97)],[],'cleared'),
+  je('je188','2026-02-06','2026-02',"Lyft",'expense',[ln('rideshare',31.28,0),ln('discover',0,31.28)],[],'cleared'),
+  je('je189','2026-02-06','2026-02',"Uber",'expense',[ln('rideshare',46.94,0),ln('discover',0,46.94)],[],'cleared'),
+  je('je190','2026-02-07','2026-02',"Butler Street Derby",'expense',[ln('food',95.62,0),ln('discover',0,95.62)],[],'cleared'),
+  je('je191','2026-02-07','2026-02',"Uber Eats",'expense',[ln('food',34.84,0),ln('discover',0,34.84)],[],'cleared'),
+  je('je192','2026-02-07','2026-02',"Lyft",'expense',[ln('rideshare',10.97,0),ln('discover',0,10.97)],[],'cleared'),
+  je('je193','2026-02-10','2026-02',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je194','2026-02-12','2026-02',"Discover",'transfer',[ln('discover',154.0,0),ln('boa',0,154.0)],[],'cleared'),
+  je('je195','2026-02-13','2026-02',"Uber One",'expense',[ln('subscriptions',9.99,0),ln('discover',0,9.99)],[],'cleared'),
+  je('je196','2026-02-14','2026-02',"Dunkin",'expense',[ln('food',11.4,0),ln('discover',0,11.4)],[],'cleared'),
+  je('je197','2026-02-13','2026-02',"RED the Steakhouse",'expense',[ln('food',300.0,0),ln('discover',0,300.0)],[],'cleared'),
+  je('je198','2026-02-14','2026-02',"Wonder Bar",'expense',[ln('food',105.0,0),ln('discover',0,105.0)],[],'cleared'),
+  je('je199','2026-02-17','2026-02',"Interest Expense",'expense',[ln('interest-exp',124.59,0),ln('discover',0,124.59)],[],'cleared'),
+  je('je200','2026-02-02','2026-02',"Bilt",'transfer',[ln('bilt',1253.55,0),ln('boa',0,1253.55)],[],'cleared'),
+  je('je201','2026-02-02','2026-02',"WSJ",'expense',[ln('subscriptions',13.9,0),ln('bilt',0,13.9)],[],'cleared'),
+  je('je202','2026-02-03','2026-02',"Apple",'expense',[ln('subscriptions',21.39,0),ln('bilt',0,21.39)],[],'cleared'),
+  je('je203','2026-02-06','2026-02',"Uber Eats",'expense',[ln('food',22.21,0),ln('bilt',0,22.21)],[],'cleared'),
+  je('je204','2026-02-08','2026-02',"Market District",'expense',[ln('food',99.55,0),ln('bilt',0,99.55)],[],'cleared'),
+  je('je205','2026-02-08','2026-02',"Google",'expense',[ln('subscriptions',2.13,0),ln('bilt',0,2.13)],[],'cleared'),
+  je('je206','2026-02-10','2026-02',"Xbox",'expense',[ln('subscriptions',9.99,0),ln('bilt',0,9.99)],[],'cleared'),
+  je('je207','2026-02-10','2026-02',"Uber Eats",'expense',[ln('food',38.34,0),ln('bilt',0,38.34)],[],'cleared'),
+  je('je208','2026-02-11','2026-02',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('bilt',0,14.0)],[],'cleared'),
+  je('je209','2026-02-12','2026-02',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('bilt',0,14.0)],[],'cleared'),
+  je('je210','2026-02-12','2026-02',"DoorDash",'expense',[ln('food',24.48,0),ln('bilt',0,24.48)],[],'cleared'),
+  je('je211','2026-02-13','2026-02',"Pizza Lupo",'expense',[ln('food',65.0,0),ln('bilt',0,65.0)],[],'cleared'),
+  je('je212','2026-02-13','2026-02',"Apple",'expense',[ln('subscriptions',2.99,0),ln('bilt',0,2.99)],[],'cleared'),
+  je('je213','2026-02-14','2026-02',"Rock & Roll Hall of Fame",'expense',[ln('entertainment',83.74,0),ln('bilt',0,83.74)],[],'cleared'),
+  je('je214','2026-02-14','2026-02',"Expedia",'expense',[ln('travel',387.14,0),ln('bilt',0,387.14)],[],'cleared'),
+  je('je215','2026-02-14','2026-02',"Metropolis",'expense',[ln('food',11.38,0),ln('bilt',0,11.38)],[],'cleared'),
+  je('je216','2026-02-14','2026-02',"Rock & Roll Hall of Fame",'expense',[ln('entertainment',83.74,0),ln('bilt',0,83.74)],[],'cleared'),
+  je('je217','2026-02-14','2026-02',"Rock & Roll HOF Gift Shop",'expense',[ln('shopping',37.81,0),ln('bilt',0,37.81)],[],'cleared'),
+  je('je218','2026-02-14','2026-02',"Pong Game (Wonder Bar)",'expense',[ln('other-exp',2.2,0),ln('bilt',0,2.2)],[],'cleared'),
+  je('je219','2026-02-14','2026-02',"CVS",'expense',[ln('personal',12.0,0),ln('bilt',0,12.0)],[],'cleared'),
+  je('je220','2026-02-15','2026-02',"Polo Factory Store",'expense',[ln('shopping',85.74,0),ln('bilt',0,85.74)],[],'cleared'),
+  je('je221','2026-02-15','2026-02',"Kate Spade",'expense',[ln('shopping',104.53,0),ln('bilt',0,104.53)],[],'cleared'),
+  je('je222','2026-02-15','2026-02',"Lids",'expense',[ln('shopping',209.0,0),ln('bilt',0,209.0)],[],'cleared'),
+  je('je223','2026-02-15','2026-02',"27 Club Coffee",'expense',[ln('food',13.63,0),ln('bilt',0,13.63)],[],'cleared'),
+  je('je224','2026-02-16','2026-02',"Amazon Prime",'expense',[ln('subscriptions',15.89,0),ln('bilt',0,15.89)],[],'cleared'),
+  je('je225','2026-02-16','2026-02',"Hilton Hotels",'expense',[ln('travel',91.8,0),ln('bilt',0,91.8)],[],'cleared'),
+  je('je226','2026-02-16','2026-02',"Ring",'expense',[ln('subscriptions',10.69,0),ln('bilt',0,10.69)],[],'cleared'),
+  je('je227','2026-02-17','2026-02',"Vending Machine (BNY)",'expense',[ln('food',1.89,0),ln('bilt',0,1.89)],[],'cleared'),
+  je('je228','2026-02-17','2026-02',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('bilt',0,14.0)],[],'cleared'),
+  je('je229','2026-02-18','2026-02',"Microsoft",'expense',[ln('subscriptions',10.68,0),ln('bilt',0,10.68)],[],'cleared'),
+  je('je230','2026-02-18','2026-02',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('bilt',0,14.0)],[],'cleared'),
+  je('je231','2026-02-19','2026-02',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('bilt',0,14.0)],[],'cleared'),
+  je('je232','2026-02-20','2026-02',"Uber Eats",'expense',[ln('food',30.01,0),ln('bilt',0,30.01)],[],'cleared'),
+  je('je233','2026-02-20','2026-02',"Uber Eats",'expense',[ln('food',39.99,0),ln('bilt',0,39.99)],[],'cleared'),
+  je('je234','2026-02-21','2026-02',"CVS",'expense',[ln('personal',6.0,0),ln('bilt',0,6.0)],[],'cleared'),
+  je('je235','2026-02-21','2026-02',"Uber Eats",'expense',[ln('food',40.01,0),ln('bilt',0,40.01)],[],'cleared'),
+  je('je236','2026-02-22','2026-02',"Uber Eats",'expense',[ln('food',27.99,0),ln('bilt',0,27.99)],[],'cleared'),
+  je('je237','2026-02-22','2026-02',"Uber Eats",'expense',[ln('food',40.0,0),ln('bilt',0,40.0)],[],'cleared'),
+  je('je238','2026-02-23','2026-02',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('bilt',0,14.0)],[],'cleared'),
+  je('je239','2026-02-23','2026-02',"Uber Eats",'expense',[ln('food',29.85,0),ln('bilt',0,29.85)],[],'cleared'),
+  je('je240','2026-02-25','2026-02',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('bilt',0,14.0)],[],'cleared'),
+  je('je241','2026-02-25','2026-02',"Target",'expense',[ln('shopping',67.04,0),ln('bilt',0,67.04)],[],'cleared'),
+  je('je242','2026-02-26','2026-02',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('bilt',0,14.0)],[],'cleared'),
+  je('je243','2026-02-26','2026-02',"Apple",'expense',[ln('subscriptions',21.4,0),ln('bilt',0,21.4)],[],'cleared'),
+  je('je244','2026-02-27','2026-02',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('bilt',0,14.0)],[],'cleared'),
+  je('je245','2026-02-26','2026-02',"Uber Eats",'expense',[ln('food',40.19,0),ln('bilt',0,40.19)],[],'cleared'),
+  je('je246','2026-02-27','2026-02',"BNY Café",'expense',[ln('food',11.28,0),ln('bilt',0,11.28)],[],'cleared'),
+  je('je247','2026-02-27','2026-02',"Uber Eats",'expense',[ln('food',32.5,0),ln('bilt',0,32.5)],[],'cleared'),
+  je('je248','2026-02-28','2026-02',"LA Fitness",'expense',[ln('health',39.99,0),ln('bilt',0,39.99)],[],'cleared'),
+  je('je249','2026-02-28','2026-02',"Uber Eats",'expense',[ln('food',30.0,0),ln('bilt',0,30.0)],[],'cleared'),
+  je('je250','2026-02-28','2026-02',"Adjustment",'expense',[ln('other-exp',0.01,0),ln('bilt',0,0.01)],[],'cleared'),
+  je('je251','2026-02-28','2026-02',"YouTube TV",'expense',[ln('subscriptions',89.21,0),ln('bilt',0,89.21)],[],'cleared'),
+  je('je252','2026-02-28','2026-02',"Peoples",'expense',[ln('utilities',143.65,0),ln('bilt',0,143.65)],[],'cleared'),
+  je('je253','2026-02-24','2026-02',"Pittsburgh Parking Authority",'expense',[ln('parking',48.5,0),ln('wf',0,48.5)],[],'cleared'),
+  je('je254','2026-02-28','2026-02',"Marcus",'income',[ln('marcus',7.66,0),ln('interest-inc',0,7.66)],[],'cleared'),
+  je('je255','2026-02-28','2026-02',"Lawrence Hall",'expense',[ln('entertainment',41.87,0),ln('boa',0,41.87)],[],'cleared'),
+  je('je256','2026-02-28','2026-02',"Lawrence Hall",'expense',[ln('entertainment',22.86,0),ln('discover',0,22.86)],[],'cleared'),
+  je('je257','2026-02-28','2026-02',"Vanguard",'income',[ln('vanguard',8.06,0),ln('gain-sale',0,8.06)],[],'cleared'),
+  je('je258','2026-02-27','2026-02',"Investments - BNY",'income',[ln('bny-espp',575.01,0),ln('salary',0,575.01)],[],'cleared'),
+  je('je259','2026-03-01','2026-03',"Mom Loan — Month 3",'transfer',[ln('notes-pay',45.90,0),ln('interest-exp',9.09,0),ln('boa',0,54.99)],['notes-pay'],'cleared'),
+  je('je260','2026-03-01','2026-03',"BoA",'transfer',[ln('boa',1000.0,0),ln('other-exp',0,1000.0)],[],'cleared'),
+  je('je261','2026-03-01','2026-03',"True-Down (Obligations to Hannah)",'transfer',[ln('ap',623.33,0),ln('other-exp',0,623.33)],[],'cleared'),
+  je('je262','2026-03-01','2026-03',"Rent + water",'expense',[ln('rent',596.0,0),ln('bilt',0,596.0)],[],'cleared'),
+  je('je263','2026-03-01','2026-03',"Bilt",'transfer',[ln('bilt',596.0,0),ln('boa',0,596.0)],[],'cleared'),
+  je('je264','2026-03-01','2026-03',"Nicky's Thai Kitchen",'expense',[ln('food',81.77,0),ln('boa',0,81.77)],[],'cleared'),
+  je('je265','2026-03-02','2026-03',"BNY Swag Box",'expense',[ln('shopping',22.98,0),ln('boa',0,22.98)],[],'cleared'),
+  je('je266','2026-03-02','2026-03',"Vending Machine",'expense',[ln('food',7.77,0),ln('boa',0,7.77)],[],'cleared'),
+  je('je267','2026-03-01','2026-03',"Amazon",'expense',[ln('shopping',349.59,0),ln('discover',0,349.59)],[],'cleared'),
+  je('je268','2026-03-01','2026-03',"De Fer Coffee & Tea",'expense',[ln('fees',13.87,0),ln('bilt',0,13.87)],[],'cleared'),
+  je('je269','2026-03-02','2026-03',"BNY Café",'expense',[ln('food',12.04,0),ln('bilt',0,12.04)],[],'cleared'),
+  je('je270','2026-03-02','2026-03',"WSJ",'expense',[ln('subscriptions',13.9,0),ln('bilt',0,13.9)],[],'cleared'),
+  je('je271','2026-03-01','2026-03',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('bilt',0,14.0)],[],'cleared'),
+  je('je272','2026-03-02','2026-03',"PNC Reserve",'transfer',[ln('pnc-re',124.99,0),ln('boa',0,124.99)],[],'cleared'),
+  je('je273','2026-03-02','2026-03',"PNC Growth",'transfer',[ln('pnc-gr',489.68,0),ln('boa',0,489.68)],[],'cleared'),
+  je('je274','2026-03-03','2026-03',"Wells Fargo",'transfer',[ln('wf',48.5,0),ln('boa',0,48.5)],[],'cleared'),
+  je('je275','2026-03-03','2026-03',"Discover",'transfer',[ln('discover',5756.42,0),ln('boa',0,5756.42)],[],'cleared'),
+  je('je276','2026-03-03','2026-03',"Discover",'transfer',[ln('discover',2028.32,0),ln('marcus',0,2028.32)],[],'cleared'),
+  je('je277','2026-03-03','2026-03',"PNC Spend",'transfer',[ln('pnc-sp',50.22,0),ln('other-exp',0,50.22)],[],'cleared'),
+  je('je278','2026-03-03','2026-03',"DoorDash",'expense',[ln('food',32.65,0),ln('pnc-sp',0,32.65)],[],'cleared'),
+  je('je279','2026-03-03','2026-03',"Investments - BNY",'income',[ln('bny-espp',2287.67,0),ln('gain-sale',0,584.26),ln('bny-espp',0,1703.41)],[],'cleared'),
+  je('je280','2026-03-04','2026-03',"BoA",'transfer',[ln('boa',2287.67,0),ln('bny-espp',0,2287.67)],[],'cleared'),
+  je('je281','2026-03-03','2026-03',"Ross St. Café",'expense',[ln('food',15.3,0),ln('discover',0,15.3)],[],'cleared'),
+  je('je282','2026-03-04','2026-03',"Ross St. Café",'expense',[ln('food',18.98,0),ln('discover',0,18.98)],[],'cleared'),
+  je('je283','2026-03-04','2026-03',"Lyft",'expense',[ln('rideshare',42.3,0),ln('discover',0,42.3)],[],'cleared'),
+  je('je284','2026-03-05','2026-03',"Vending Machine (BNY)",'expense',[ln('food',1.89,0),ln('discover',0,1.89)],[],'cleared'),
+  je('je285','2026-03-05','2026-03',"Highline Garage",'expense',[ln('parking',3.0,0),ln('discover',0,3.0)],[],'cleared'),
+  je('je286','2026-03-03','2026-03',"Vending Machine (BNY)",'expense',[ln('food',9.63,0),ln('bilt',0,9.63)],[],'cleared'),
+  je('je287','2026-03-03','2026-03',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('bilt',0,14.0)],[],'cleared'),
+  je('je288','2026-03-04','2026-03',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('bilt',0,14.0)],[],'cleared'),
+  je('je289','2026-03-04','2026-03',"Uber Eats",'expense',[ln('food',31.5,0),ln('bilt',0,31.5)],[],'cleared'),
+  je('je290','2026-03-05','2026-03',"Vending Machine (BNY)",'expense',[ln('food',9.63,0),ln('bilt',0,9.63)],[],'cleared'),
+  je('je291','2026-03-05','2026-03',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('bilt',0,14.0)],[],'cleared'),
+  je('je292','2026-03-05','2026-03',"Discover",'transfer',[ln('discover',2206.67,0),ln('boa',0,2206.67)],[],'cleared'),
+  je('je293','2026-03-05','2026-03',"Bilt",'transfer',[ln('bilt',1000.0,0),ln('marcus',0,1000.0)],[],'cleared'),
+  je('je294','2026-03-06','2026-03',"Vending Machine (BNY)",'expense',[ln('food',10.25,0),ln('discover',0,10.25)],[],'cleared'),
+  je('je295','2026-03-06','2026-03',"Pittsburgh Parking Authority (Permit)",'expense',[ln('parking',42.5,0),ln('discover',0,42.5)],[],'cleared'),
+  je('je296','2026-03-06','2026-03',"Pittsburgh Parking Authority (Permit)",'expense',[ln('parking',42.5,0),ln('discover',0,42.5)],[],'cleared'),
+  je('je297','2026-03-06','2026-03',"Sienna Mercato",'expense',[ln('food',27.09,0),ln('discover',0,27.09)],[],'cleared'),
+  je('je298','2026-03-06','2026-03',"Beer and Tobacco",'expense',[ln('food',31.02,0),ln('discover',0,31.02)],[],'cleared'),
+  je('je299','2026-03-06','2026-03',"The Eagle",'expense',[ln('food',41.06,0),ln('discover',0,41.06)],[],'cleared'),
+  je('je300','2026-03-06','2026-03',"Ross Street Café",'expense',[ln('food',15.82,0),ln('bilt',0,15.82)],[],'cleared'),
+  je('je301','2026-03-06','2026-03',"Google",'expense',[ln('subscriptions',2.13,0),ln('bilt',0,2.13)],[],'cleared'),
+  je('je302','2026-03-07','2026-03',"Uber",'expense',[ln('rideshare',25.98,0),ln('bilt',0,25.98)],[],'cleared'),
+  je('je303','2026-03-07','2026-03',"Uber Eats",'expense',[ln('food',35.0,0),ln('bilt',0,35.0)],[],'cleared'),
+  je('je304','2026-03-07','2026-03',"Uber Eats",'expense',[ln('food',34.99,0),ln('bilt',0,34.99)],[],'cleared'),
+  je('je305','2026-03-07','2026-03',"Amazon",'expense',[ln('shopping',129.61,0),ln('bilt',0,129.61)],[],'cleared'),
+  je('je306','2026-03-13','2026-03',"BoA",'income',[ln('boa',1964.03,0),ln('salary',0,1964.03)],[],'cleared'),
+  je('je307','2026-03-09','2026-03',"Uber Eats",'expense',[ln('food',20.01,0),ln('pnc-sp',0,20.01)],[],'cleared'),
+  je('je308','2026-03-13','2026-03',"BNY 401(k) - PT",'income',[ln('bny401k-pt',236.67,0),ln('salary',0,236.67)],[],'cleared'),
+  je('je309','2026-03-08','2026-03',"Lyft",'expense',[ln('rideshare',13.28,0),ln('discover',0,13.28)],[],'cleared'),
+  je('je310','2026-03-08','2026-03',"Parking (Chatham)",'expense',[ln('parking',146.0,0),ln('discover',0,146.0)],[],'cleared'),
+  je('je311','2026-03-08','2026-03',"Lawrenceville Hemp Co.",'expense',[ln('other-exp',64.2,0),ln('discover',0,64.2)],[],'cleared'),
+  je('je312','2026-03-08','2026-03',"Uber Eats",'expense',[ln('food',29.99,0),ln('discover',0,29.99)],[],'cleared'),
+  je('je313','2026-03-09','2026-03',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je314','2026-03-10','2026-03',"Ross Street Café",'expense',[ln('food',18.6,0),ln('discover',0,18.6)],[],'cleared'),
+  je('je315','2026-03-10','2026-03',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je316','2026-03-10','2026-03',"Uber Eats",'expense',[ln('food',18.0,0),ln('discover',0,18.0)],[],'cleared'),
+  je('je317','2026-03-11','2026-03',"Ross Street Café",'expense',[ln('food',16.45,0),ln('discover',0,16.45)],[],'cleared'),
+  je('je318','2026-03-12','2026-03',"Vending Machine (BNY)",'expense',[ln('food',6.66,0),ln('discover',0,6.66)],[],'cleared'),
+  je('je319','2026-03-12','2026-03',"Ross Street Café",'expense',[ln('food',17.46,0),ln('discover',0,17.46)],[],'cleared'),
+  je('je320','2026-03-12','2026-03',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je321','2026-03-12','2026-03',"Uber Eats",'expense',[ln('food',40.0,0),ln('discover',0,40.0)],[],'cleared'),
+  je('je322','2026-03-12','2026-03',"Uber Eats",'expense',[ln('food',25.01,0),ln('discover',0,25.01)],[],'cleared'),
+  je('je323','2026-03-13','2026-03',"Vending Machine (BNY)",'expense',[ln('food',6.66,0),ln('discover',0,6.66)],[],'cleared'),
+  je('je324','2026-03-13','2026-03',"Ross Street Café",'expense',[ln('food',21.0,0),ln('discover',0,21.0)],[],'cleared'),
+  je('je325','2026-03-13','2026-03',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je326','2026-03-11','2026-03',"Xbox",'expense',[ln('subscriptions',9.99,0),ln('bilt',0,9.99)],[],'cleared'),
+  je('je327','2026-03-13','2026-03',"Apple",'expense',[ln('subscriptions',2.99,0),ln('bilt',0,2.99)],[],'cleared'),
+  je('je328','2026-03-13','2026-03',"Uber One",'expense',[ln('subscriptions',9.99,0),ln('bilt',0,9.99)],[],'cleared'),
+  je('je329','2026-03-13','2026-03',"Uber Eats",'expense',[ln('food',52.79,0),ln('bilt',0,52.79)],[],'cleared'),
+  je('je330','2026-03-13','2026-03',"Uber Eats",'expense',[ln('food',32.21,0),ln('bilt',0,32.21)],[],'cleared'),
+  je('je331','2026-03-14','2026-03',"E-Z Pass OH",'expense',[ln('travel',21.0,0),ln('wf',0,21.0)],[],'cleared'),
+  je('je332','2026-03-15','2026-03',"FanDuel",'expense',[ln('gambling',50.0,0),ln('boa',0,50.0)],[],'cleared'),
+  je('je333','2026-03-16','2026-03',"PNC Spend",'transfer',[ln('pnc-sp',245.01,0),ln('boa',0,245.01)],[],'cleared'),
+  je('je334','2026-03-16','2026-03',"PNC Growth",'transfer',[ln('pnc-gr',490.7,0),ln('boa',0,490.7)],[],'cleared'),
+  je('je335','2026-03-17','2026-03',"Vanguard",'transfer',[ln('vanguard',478.17,0),ln('boa',0,478.17)],[],'cleared'),
+  je('je336','2026-03-16','2026-03',"Discover",'transfer',[ln('discover',781.15,0),ln('boa',0,781.15)],[],'cleared'),
+  je('je337','2026-03-17','2026-03',"Interest Expense",'expense',[ln('interest-exp',62.47,0),ln('discover',0,62.47)],[],'cleared'),
+  je('je338','2026-03-17','2026-03',"Ross Street Café",'expense',[ln('food',17.84,0),ln('discover',0,17.84)],[],'cleared'),
+  je('je339','2026-03-17','2026-03',"Lyft",'expense',[ln('rideshare',9.47,0),ln('discover',0,9.47)],[],'cleared'),
+  je('je340','2026-03-14','2026-03',"Uber Eats",'expense',[ln('food',75.02,0),ln('bilt',0,75.02)],[],'cleared'),
+  je('je341','2026-03-16','2026-03',"Ring",'expense',[ln('subscriptions',10.69,0),ln('bilt',0,10.69)],[],'cleared'),
+  je('je342','2026-03-16','2026-03',"Amazon Prime",'expense',[ln('subscriptions',15.89,0),ln('bilt',0,15.89)],[],'cleared'),
+  je('je343','2026-03-16','2026-03',"Uber Eats",'expense',[ln('food',45.19,0),ln('bilt',0,45.19)],[],'cleared'),
+  je('je344','2026-03-17','2026-03',"Uber",'expense',[ln('rideshare',55.68,0),ln('bilt',0,55.68)],[],'cleared'),
+  je('je345','2026-03-31','2026-03',"BoA",'income',[ln('boa',1778.82,0),ln('salary',0,1778.82)],[],'cleared'),
+  je('je346','2026-03-31','2026-03',"PNC Reserve",'transfer',[ln('pnc-re',597.0,0),ln('boa',0,597.0)],[],'cleared'),
+  je('je347','2026-03-31','2026-03',"Wire Fee",'expense',[ln('fees',30.0,0),ln('boa',0,30.0)],[],'cleared'),
+  je('je348','2026-03-19','2026-03',"Lyft",'expense',[ln('rideshare',18.94,0),ln('pnc-sp',0,18.94)],[],'cleared'),
+  je('je349','2026-03-19','2026-03',"Uber Eats",'expense',[ln('food',45.0,0),ln('pnc-sp',0,45.0)],[],'cleared'),
+  je('je350','2026-03-20','2026-03',"Cava",'expense',[ln('food',31.08,0),ln('pnc-sp',0,31.08)],[],'cleared'),
+  je('je351','2026-03-21','2026-03',"Lottery Tickets",'expense',[ln('gambling',100.0,0),ln('pnc-sp',0,100.0)],[],'cleared'),
+  je('je352','2026-03-22','2026-03',"Lyft",'expense',[ln('rideshare',19.97,0),ln('pnc-sp',0,19.97)],[],'cleared'),
+  je('je353','2026-03-29','2026-03',"PNC Spend",'transfer',[ln('pnc-sp',10.0,0),ln('other-exp',0,10.0)],[],'cleared'),
+  je('je354','2026-03-29','2026-03',"FanDuel Deposit",'expense',[ln('gambling',10.0,0),ln('pnc-sp',0,10.0)],[],'cleared'),
+  je('je355','2026-03-27','2026-03',"PNC Spend",'transfer',[ln('pnc-sp',28.0,0),ln('pnc-re',0,28.0)],[],'cleared'),
+  je('je356','2026-03-31','2026-03',"BoA",'transfer',[ln('boa',597.0,0),ln('pnc-re',0,597.0)],[],'cleared'),
+  je('je357','2026-03-27','2026-03',"PNC Spend",'transfer',[ln('pnc-sp',490.7,0),ln('pnc-gr',0,490.7)],[],'cleared'),
+  je('je358','2026-03-31','2026-03',"PNC Growth",'income',[ln('pnc-gr',0.78,0),ln('interest-inc',0,0.78)],[],'cleared'),
+  je('je359','2026-03-30','2026-03',"Charles Schwab",'income',[ln('schwab',108.54,0),ln('gain-sale',0,6.54),ln('schwab',0,102.0)],[],'cleared'),
+  je('je360','2026-03-30','2026-03',"Charles Schwab",'transfer',[ln('schwab',345.15,0),ln('loss-sale',109.06,0),ln('schwab',0,454.21)],[],'cleared'),
+  je('je361','2026-03-30','2026-03',"Charles Schwab",'transfer',[ln('schwab',565.62,0),ln('loss-sale',144.37,0),ln('schwab',0,709.99)],[],'cleared'),
+  je('je362','2026-03-31','2026-03',"BoA",'transfer',[ln('boa',699.31,0),ln('schwab',0,699.31)],[],'cleared'),
+  je('je363','2026-03-31','2026-03',"Charles Schwab",'income',[ln('schwab',4.49,0),ln('interest-inc',0,4.49)],[],'cleared'),
+  je('je364','2026-03-31','2026-03',"BNY 401(k) - PT",'income',[ln('bny401k-pt',236.67,0),ln('salary',0,236.67)],[],'cleared'),
+  je('je365','2026-03-27','2026-03',"Vanguard",'transfer',[ln('vanguard',531.87,0),ln('pnc-sp',0,531.87)],[],'cleared'),
+  je('je366','2026-03-31','2026-03',"Unrealized Loss",'expense',[ln('loss-sale',32.9,0),ln('vanguard',0,32.9)],[],'cleared'),
+  je('je367','2026-03-31','2026-03',"Marcus",'income',[ln('marcus',1.09,0),ln('interest-inc',0,1.09)],[],'cleared'),
+  je('je368','2026-03-18','2026-03',"Vending Machine (BNY)",'expense',[ln('food',9.14,0),ln('discover',0,9.14)],[],'cleared'),
+  je('je369','2026-03-19','2026-03',"Ross Street Café",'expense',[ln('food',16.57,0),ln('discover',0,16.57)],[],'cleared'),
+  je('je370','2026-03-20','2026-03',"Lyft",'expense',[ln('rideshare',18.92,0),ln('discover',0,18.92)],[],'cleared'),
+  je('je371','2026-03-21','2026-03',"Fine Wine & Good Spirits",'expense',[ln('other-exp',57.75,0),ln('discover',0,57.75)],[],'cleared'),
+  je('je372','2026-03-22','2026-03',"Keepin’ It Glassy",'expense',[ln('other-exp',26.49,0),ln('discover',0,26.49)],[],'cleared'),
+  je('je373','2026-03-22','2026-03',"McFadden’s",'expense',[ln('other-exp',88.4,0),ln('discover',0,88.4)],[],'cleared'),
+  je('je374','2026-03-22','2026-03',"Tequila Cowboy",'expense',[ln('food',46.25,0),ln('discover',0,46.25)],[],'cleared'),
+  je('je375','2026-03-22','2026-03',"Uber Eats",'expense',[ln('food',50.01,0),ln('discover',0,50.01)],[],'cleared'),
+  je('je376','2026-03-26','2026-03',"Ross Street Café",'expense',[ln('food',17.84,0),ln('discover',0,17.84)],[],'cleared'),
+  je('je377','2026-03-26','2026-03',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je378','2026-03-26','2026-03',"Uber Eats",'expense',[ln('food',32.0,0),ln('discover',0,32.0)],[],'cleared'),
+  je('je379','2026-03-27','2026-03',"Ross Street Café",'expense',[ln('food',21.13,0),ln('discover',0,21.13)],[],'cleared'),
+  je('je380','2026-03-27','2026-03',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je381','2026-03-28','2026-03',"Uber Eats",'expense',[ln('food',28.0,0),ln('discover',0,28.0)],[],'cleared'),
+  je('je382','2026-03-28','2026-03',"Uber Eats",'expense',[ln('food',35.01,0),ln('discover',0,35.01)],[],'cleared'),
+  je('je383','2026-03-30','2026-03',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je384','2026-03-30','2026-03',"Uber Eats",'expense',[ln('food',32.0,0),ln('discover',0,32.0)],[],'cleared'),
+  je('je385','2026-03-31','2026-03',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je386','2026-03-31','2026-03',"Uber Eats",'expense',[ln('food',37.01,0),ln('discover',0,37.01)],[],'cleared'),
+  je('je387','2026-03-19','2026-03',"Microsoft 365 Personal",'expense',[ln('subscriptions',10.68,0),ln('bilt',0,10.68)],[],'cleared'),
+  je('je388','2026-03-20','2026-03',"Rita's Italian Ice & Frozen Custard",'expense',[ln('food',15.11,0),ln('bilt',0,15.11)],[],'cleared'),
+  je('je389','2026-03-21','2026-03',"Dick’s Sporting Goods",'expense',[ln('other-exp',125.0,0),ln('bilt',0,125.0)],[],'cleared'),
+  je('je390','2026-03-21','2026-03',"HomeGoods",'expense',[ln('shopping',231.4,0),ln('bilt',0,231.4)],[],'cleared'),
+  je('je391','2026-03-23','2026-03',"DoorDash",'expense',[ln('food',50.0,0),ln('bilt',0,50.0)],[],'cleared'),
+  je('je392','2026-03-24','2026-03',"Ross Street Café",'expense',[ln('food',16.06,0),ln('bilt',0,16.06)],[],'cleared'),
+  je('je393','2026-03-24','2026-03',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('bilt',0,14.0)],[],'cleared'),
+  je('je394','2026-03-24','2026-03',"Apple",'expense',[ln('subscriptions',21.4,0),ln('bilt',0,21.4)],[],'cleared'),
+  je('je395','2026-03-24','2026-03',"Pennsylvania Turnpike",'expense',[ln('travel',16.6,0),ln('bilt',0,16.6)],[],'cleared'),
+  je('je396','2026-03-25','2026-03',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('bilt',0,14.0)],[],'cleared'),
+  je('je397','2026-03-25','2026-03',"Ross Street Café",'expense',[ln('food',17.97,0),ln('bilt',0,17.97)],[],'cleared'),
+  je('je398','2026-03-28','2026-03',"LA Fitness",'expense',[ln('health',39.99,0),ln('bilt',0,39.99)],[],'cleared'),
+  je('je399','2026-03-28','2026-03',"YouTube TV",'expense',[ln('subscriptions',89.21,0),ln('bilt',0,89.21)],[],'cleared'),
+  je('je400','2026-03-30','2026-03',"Wall Street Journal",'expense',[ln('subscriptions',13.9,0),ln('bilt',0,13.9)],[],'cleared'),
+  je('je401','2026-03-30','2026-03',"Bilt",'transfer',[ln('bilt',37.44,0),ln('shopping',0,37.44)],[],'cleared'),
+  je('je402','2026-04-01','2026-04',"BoA",'transfer',[ln('boa',500.0,0),ln('other-exp',0,500.0)],[],'cleared'),
+  je('je403','2026-04-01','2026-04',"Domestic Incoming Wire Fee",'expense',[ln('fees',15.0,0),ln('pnc-re',0,15.0)],[],'cleared'),
+  je('je404','2026-04-03','2026-04',"Marcus",'income',[ln('marcus',15.57,0),ln('other-inc',0,15.57)],[],'cleared'),
+  je('je405','2026-04-02','2026-04',"Uber Eats",'expense',[ln('food',25.99,0),ln('discover',0,25.99)],[],'cleared'),
+  je('je406','2026-04-02','2026-04',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je407','2026-04-02','2026-04',"Uber Eats",'expense',[ln('food',30.01,0),ln('discover',0,30.01)],[],'cleared'),
+  je('je408','2026-04-03','2026-04',"Ross Street Café",'expense',[ln('food',14.67,0),ln('discover',0,14.67)],[],'cleared'),
+  je('je409','2026-04-03','2026-04',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je410','2026-04-03','2026-04',"Lawrenceville Hemp Co",'expense',[ln('other-exp',64.2,0),ln('discover',0,64.2)],[],'cleared'),
+  je('je411','2026-04-03','2026-04',"Kelly’s Sweets & Greets",'expense',[ln('other-exp',6.37,0),ln('discover',0,6.37)],[],'cleared'),
+  je('je412','2026-04-01','2026-04',"Rent + water expense",'expense',[ln('rent',597.0,0),ln('bilt',0,597.0)],[],'cleared'),
+  je('je413','2026-04-01','2026-04',"Bilt",'transfer',[ln('bilt',597.0,0),ln('boa',0,597.0)],[],'cleared'),
+  je('je414','2026-04-03','2026-04',"Miscellaneous Expenses - Adjustment",'expense',[ln('other-exp',21.84,0),ln('pnc-sp',0,21.84)],[],'cleared'),
+  je('je415','2026-04-03','2026-04',"Mom Loan — Month 3 Interest (Venmo - Mom)",'transfer',[ln('interest-exp',9.09,0),ln('notes-pay',45.90,0),ln('boa',0,54.99)],['notes-pay'],'cleared'),
+  je('je416','2026-04-03','2026-04',"Uber Eats",'expense',[ln('food',38.47,0),ln('discover',0,38.47)],[],'cleared'),
+  je('je417','2026-04-04','2026-04',"Venmo - Mom",'expense',[ln('other-exp',20.0,0),ln('boa',0,20.0)],[],'cleared'),
+  je('je418','2026-04-04','2026-04',"Claude (Extra Usage)",'expense',[ln('ai-spend',48.15,0),ln('bilt',0,48.15)],[],'cleared'),
+  je('je419','2026-04-05','2026-04',"Interest Expense",'expense',[ln('interest-exp',11.46,0),ln('bilt',0,11.46)],[],'cleared'),
+  je('je420','2026-04-05','2026-04',"Claude (Extra Usage)",'expense',[ln('ai-spend',48.15,0),ln('bilt',0,48.15)],[],'cleared'),
+  je('je421','2026-04-05','2026-04',"Uber Eats",'expense',[ln('food',45.01,0),ln('discover',0,45.01)],[],'cleared'),
+  je('je422','2026-04-06','2026-04',"Charles Schwab",'income',[ln('schwab',12.96,0),ln('div-inc',0,12.96)],[],'cleared'),
+  je('je423','2026-04-07','2026-04',"Ross Street Café",'expense',[ln('food',18.72,0),ln('discover',0,18.72)],[],'cleared'),
+  je('je424','2026-04-07','2026-04',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je425','2026-04-08','2026-04',"Ross Street Café",'expense',[ln('food',22.52,0),ln('discover',0,22.52)],[],'cleared'),
+  je('je426','2026-04-08','2026-04',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je427','2026-04-06','2026-04',"Google One",'expense',[ln('subscriptions',2.13,0),ln('bilt',0,2.13)],[],'cleared'),
+  je('je428','2026-04-06','2026-04',"Uber Eats",'expense',[ln('food',25.12,0),ln('bilt',0,25.12)],[],'cleared'),
+  je('je429','2026-01-29','2026-01',"Auto Loan Payment — #1",'transfer',[ln('auto-loan',414.71,0),ln('interest-exp',75.99,0),ln('pnc-gr',0,490.70)],['auto-loan'],'cleared'),
+  je('je430','2026-02-09','2026-02',"Auto Loan Payment — #2",'transfer',[ln('auto-loan',466.49,0),ln('interest-exp',24.21,0),ln('pnc-gr',0,490.70)],['auto-loan'],'cleared'),
+  je('je432','2026-03-09','2026-03',"Auto Loan Payment — #3",'transfer',[ln('auto-loan',430.14,0),ln('interest-exp',60.56,0),ln('pnc-gr',0,490.70)],['auto-loan'],'cleared'),
+  je('je_reclass','2026-04-09','2026-04',"Reclass to HTM — Vanguard to cost basis",'expense',[ln('other-exp',96.44,0),ln('vanguard',0,96.44)],[],'cleared'),
+  je('je-apr9a','2026-04-09','2026-04',"Parking (Chatham)",'expense',[ln('parking',14.0,0),ln('discover',0,14.0)],[],'cleared'),
+  je('je-apr9b','2026-04-09','2026-04',"Apple",'expense',[ln('subscriptions',133.74,0),ln('bilt',0,133.74)],[],'cleared'),
+  je('je-apr9c','2026-04-09','2026-04',"Uber Eats",'expense',[ln('food',19.0,0),ln('bilt',0,19.0)],[],'cleared'),
+],
+autoLoan:{
+  origPrin:27284.75,apr:0.0299,contractDate:'2025-12-26',monthlyPay:490.70,
+  payments:[
+    {date:'2025-12-26',payment:null,days:0,interest:0,principal:0,balance:27284.75,type:'open'},
+    {date:'2026-01-29',payment:490.70,days:34,interest:75.99,principal:414.71,balance:26870.04,type:'regular'},
+    {date:'2026-02-09',payment:490.70,days:11,interest:24.21,principal:466.49,balance:26403.55,type:'regular'},
+    {date:'2026-03-09',payment:490.70,days:28,interest:60.56,principal:430.14,balance:25973.41,type:'regular'},
+  ]
+},
+momLoan:{principal:3000,rate:0.0375,startDate:'2026-01-01',monthlyPay:54.99,termMonths:60,minInterest:112.50,paidMonths:[1,2,3],paymentDates:{1:'2026-01-28',2:'2026-03-01',3:'2026-04-03'},principalOnly:[]},
+tickers:[
+  {id:'t-voo',sym:'VOO',nm:'Vanguard S&P 500 ETF',src:'worker',livePrice:0,lastFetch:null},
+  {id:'t-vgt',sym:'VGT',nm:'Vanguard Information Technology ETF',src:'worker',livePrice:0,lastFetch:null},
+  {id:'t-vtwo',sym:'VTWO',nm:'Vanguard Russell 2000 ETF',src:'worker',livePrice:0,lastFetch:null},
+  {id:'t-vxus',sym:'VXUS',nm:'Vanguard Total International Stock ETF',src:'worker',livePrice:0,lastFetch:null},
+  {id:'t-bk',sym:'BK',nm:'Bank of New York Mellon Corp',src:'worker',livePrice:0,lastFetch:null},
+  {id:'t-irm',sym:'IRM',nm:'Iron Mountain Inc',src:'worker',livePrice:0,lastFetch:null},
+  {id:'t-crcl',sym:'CRCL',nm:'Circle Internet Group',src:'worker',livePrice:0,lastFetch:null},
+  {id:'t-btc',sym:'BTC-USD',nm:'Bitcoin',src:'worker',livePrice:0,lastFetch:null},
+  {id:'t-eth',sym:'ETH-USD',nm:'Ethereum',src:'worker',livePrice:0,lastFetch:null},
+  {id:'t-sol',sym:'SOL-USD',nm:'Solana',src:'worker',livePrice:0,lastFetch:null},
+],
+positions:[
+  {id:'p1',tkId:'t-voo',acct:'vanguard',lots:[],nt:'Roth IRA core'},
+  {id:'p2',tkId:'t-vgt',acct:'vanguard',lots:[]},
+  {id:'p3',tkId:'t-vtwo',acct:'vanguard',lots:[]},
+  {id:'p4',tkId:'t-vxus',acct:'vanguard',lots:[]},
+  {id:'p5',tkId:'t-bk',acct:'bny-espp',lots:[],nt:'ESPP — 5% discount lots'},
+  {id:'p6',tkId:'t-irm',acct:'schwab',lots:[]},
+  {id:'p7',tkId:'t-btc',acct:'coinbase',lots:[]},
+  {id:'p8',tkId:'t-eth',acct:'coinbase',lots:[]},
+  {id:'p9',tkId:'t-crcl',acct:'schwab',lots:[]},
+],
+manualPositions:[
+  {id:'mp1',nm:'BNY 401(k) — Total',acct:'401k',bsAcct:'bny401k',value:17171.37,note:'Mutual fund cost basis'},
+],
+footnotes:[
+  {id:'fn1',ref:'(a)',accounts:['schwab','coinbase','bny401k-pt','bny401k-cm'],text:'Reflected at cost, with adjustments as necessary to reflect material changes.'},
+  {id:'fn2',ref:'(b)',accounts:['vanguard'],text:'Reflected at fair market value, marked to market (MTM) monthly.'},
+  {id:'fn3',ref:'(c)',accounts:['bny-espp'],text:'Participates in Employee Stock Purchase Plan (ESPP). Shares purchased at a 5% discount on market price at end of purchase period. Recognized as income at purchase and reflected at cost.'},
+  {id:'fn4',ref:'(d)',accounts:['bny-espp'],text:'10 unvested RSUs after-tax: 6 RSUs vest Nov 1, 2027; 4 RSUs vest Feb 15, 2027. Recognized as income upon vesting, reflected at cost.'},
+  {id:'fn5',ref:'(e)',accounts:['value-card'],text:'Prepaid parking card for BNY Pittsburgh locations. Reloadable, non-interest bearing. Max balance $200.'},
+],
+investmentCash:{'401k':0,'schwab':0,'vanguard':0,'bny-espp':0},
+};}
+
+let D=(()=>{
+  try{
+    const s=localStorage.getItem(SK);
+    if(s){
+      const p=JSON.parse(s);
+      if(!p.manualPositions)p.manualPositions=defaultData().manualPositions;
+      p.manualPositions=p.manualPositions.filter(m=>m.id!=='mp2');
+      if(!p.footnotes)p.footnotes=defaultData().footnotes;
+      p.footnotes.forEach(fn=>{if(!fn.accounts)fn.accounts=[];}); // remove Schwab Cash / Other — redundant with BS balance
+      if(!p.investmentCash)p.investmentCash={'401k':0,'schwab':0,'vanguard':0,'bny-espp':0};
+      if(p.investmentCash['bny-espp']==null)p.investmentCash['bny-espp']=0;
+      // Remove ONLY the bad mom loan JEs that double-counted bank accounts; keep je415
+      p.journalEntries=p.journalEntries.filter(je=>!['je-ml1','je-ml2','je-ml3'].includes(je.id));
+      // Fix paidMonths and add paymentDates
+      p.momLoan.paidMonths=[1,2,3];
+      if(!p.momLoan.paymentDates)p.momLoan.paymentDates={1:'2026-01-28',2:'2026-03-01',3:'2026-04-03'};
+      const jeIds=p.journalEntries.map(je=>je.id);
+      // Fix je_reclass date to Apr 9
+      const jrc=p.journalEntries.find(je=>je.id==='je_reclass');
+      if(jrc)jrc.date='2026-04-09';
+      // Fix je261 — was self-canceling (CR ap), should CR other-exp
+      const j261=p.journalEntries.find(je=>je.id==='je261');
+      if(j261)j261.lines=j261.lines.map(l=>l.aid==='ap'&&l.cr>0?{...l,aid:'other-exp'}:l);
+      if(j261)j261.desc='True-Down (Obligations to Hannah)';
+      // Fix je157 label
+      const j157=p.journalEntries.find(je=>je.id==='je157');
+      if(j157&&j157.desc==='Accounts payable')j157.desc='True-Down (Costco)';
+      // Fix je415 — correct month 3 amounts and accounts
+      const j415=p.journalEntries.find(je=>je.id==='je415');
+      if(j415){j415.desc='Mom Loan — Month 3 Interest (Venmo - Mom)';j415.lines=[{aid:'interest-exp',dr:9.09,cr:0},{aid:'notes-pay',dr:45.90,cr:0},{aid:'boa',dr:0,cr:54.99}];}
+      // Add missing AP clearing entries
+      if(!jeIds.includes('je-td1'))p.journalEntries.push({id:'je-td1',date:'2026-01-19',period:'2026-01',desc:'True-Down (Turks & Caicos)',cat:'transfer',lines:[{aid:'ap',dr:484.59,cr:0},{aid:'other-exp',dr:0,cr:484.59}],tags:[],status:'cleared'});
+      if(!jeIds.includes('je-td2'))p.journalEntries.push({id:'je-td2',date:'2026-01-28',period:'2026-01',desc:"True-Down (People's Gas)",cat:'transfer',lines:[{aid:'ap',dr:57.93,cr:0},{aid:'utilities',dr:0,cr:57.93}],tags:[],status:'cleared'});
+      // Add True-Up je156 label fix
+      const j156=p.journalEntries.find(je=>je.id==='je156');
+      if(j156)j156.desc='True-Up (Turks & Caicos)';
+      // Add missing April 9 entries
+      if(!jeIds.includes('je-apr9a'))p.journalEntries.push({id:'je-apr9a',date:'2026-04-09',period:'2026-04',desc:'Parking (Chatham)',cat:'expense',lines:[{aid:'parking',dr:14.0,cr:0},{aid:'discover',dr:0,cr:14.0}],tags:[],status:'cleared'});
+      if(!jeIds.includes('je-apr9b'))p.journalEntries.push({id:'je-apr9b',date:'2026-04-09',period:'2026-04',desc:'Apple',cat:'expense',lines:[{aid:'subscriptions',dr:133.74,cr:0},{aid:'bilt',dr:0,cr:133.74}],tags:[],status:'cleared'});
+      if(!jeIds.includes('je-apr9c'))p.journalEntries.push({id:'je-apr9c',date:'2026-04-09',period:'2026-04',desc:'Uber Eats',cat:'expense',lines:[{aid:'food',dr:19.0,cr:0},{aid:'bilt',dr:0,cr:19.0}],tags:[],status:'cleared'});
+      return p;
+    }
+  }catch(e){}
+  return defaultData();
+})();
+function save(){try{localStorage.setItem(SK,JSON.stringify(D));}catch(e){}}
+
+// ─── UTILS ───────────────────────────────────────────────────
+function ff(n,d=2){if(n===null||n===undefined||isNaN(n))return'—';const s=Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});return n<0?`(${s})`:s;}
+function uid(){return'x'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
+function acctById(id){return D.accounts.find(a=>a.id===id);}
+function byCat(cat){return D.accounts.filter(a=>a.cat===cat&&!a.par);}
+function kids(pid){return D.accounts.filter(a=>a.par===pid);}
+function bal(id,p='c'){return(D.balances[id]||{})[p]||0;}
+function tkById(id){return(D.tickers||[]).find(t=>t.id===id);}
+function posShares(pos){return(pos.lots||[]).reduce((s,l)=>s+l.sh,0);}
+function posCost(pos){return(pos.lots||[]).reduce((s,l)=>s+l.cost,0);}
+function posLivePrice(pos){const tk=tkById(pos.tkId);if(!tk)return 0;return LIVE_PRICES[tk.sym]||tk.livePrice||0;}
+
+// ─── BALANCE CALC ─────────────────────────────────────────────
+// Compute an account's balance as of cutoff date using JEs from prior year basis
+function calcBalAt(acctId, cutoff){
+  const a=acctById(acctId);if(!a)return 0;
+  const prior=(D.balances[acctId]||{}).p||0;
+  let run=prior;
+  D.journalEntries
+    .filter(je=>je.status!=='pending'&&je.date<=cutoff&&je.lines.some(l=>l.aid===acctId))
+    .sort((a,b)=>a.date>b.date?1:-1)
+    .forEach(je=>{
+      je.lines.filter(l=>l.aid===acctId).forEach(l=>{
+        run+=a.nb==='debit'?(l.dr-l.cr):(l.cr-l.dr);
+      });
+      run=Math.round(run*100)/100;
+    });
+  return run;
+}
+
+// Accumulated depreciation — computed from schedule, NOT from JEs
+// Straight-line, month-end recognition, starts 1st full month after purchase
+function calcAccumDepAt(cutoff){
+  const dep=D.autoDep||{purchasePrice:32263.86,usefulLifeMonths:60,startDate:'2025-12-26'};
+  const monthly=+(dep.purchasePrice/dep.usefulLifeMonths).toFixed(3);
+  const start=new Date(dep.startDate+'T12:00:00');
+  const cutoffDate=new Date(cutoff+'T12:00:00');
+  // First full depreciation period starts 1st of month AFTER purchase
+  const depStart=new Date(start.getFullYear(),start.getMonth()+1,1);
+  if(cutoffDate<depStart)return 0;
+  // rawMo = how many months into the schedule we are (0 = in January 2026)
+  const rawMo=(cutoffDate.getFullYear()-depStart.getFullYear())*12+(cutoffDate.getMonth()-depStart.getMonth());
+  // Only count a month if we've reached its last day
+  const lastDayOfCurPeriod=new Date(depStart.getFullYear(),depStart.getMonth()+rawMo+1,0);
+  const mo=Math.max(0,Math.min(cutoffDate>=lastDayOfCurPeriod?rawMo+1:rawMo,dep.usefulLifeMonths));
+  return-(monthly*mo);
+}
+
+// Notes payable — schedule-driven (like accum-dep), NOT JE-driven
+// Respects payment dates so period-based BS shows correct balance
+function calcNotesPayAt(cutoff){
+  const ml=D.momLoan;
+  const sched=buildSched();
+  const dates=ml.paymentDates||{};
+  // Count schedule months whose payment date is on or before cutoff
+  const paidByDate=ml.paidMonths.filter(m=>dates[m]&&dates[m]<=cutoff);
+  if(!paidByDate.length)return ml.principal;
+  const maxPaid=Math.max(...paidByDate);
+  return Math.round((sched[maxPaid-1]?.end||ml.principal)*100)/100;
+}
+
+// Snapshot of all key totals at a period
+function snap(period){
+  const isFY25=period==='fy25';
+  const cutoff=cutoffOf(period);
+  const g=id=>{
+    if(id==='notes-pay')return isFY25?bal('notes-pay','p'):calcNotesPayAt(cutoff);
+    return isFY25?bal(id,'p'):calcBalAt(id,cutoff);
+  };
+  // Accumulated depreciation is schedule-driven, not JE-driven
+  const accumDep=isFY25?bal('accum-dep','p'):calcAccumDepAt(cutoff);
+  const ca_accts=byCat('ca');
+  let ca=0;
+  ca_accts.forEach(a=>{const ks=kids(a.id);ca+=ks.length?ks.reduce((s,k)=>s+g(k.id),0):g(a.id);});
+  const v401=g('bny401k-pt')+g('bny401k-cm');
+  const veh=g('vehicle')+accumDep;
+  const nca=v401+g('vanguard')+g('marcus')+veh;
+  const oa=byCat('oa').reduce((s,a)=>s+g(a.id),0);
+  const ta=ca+nca+oa;
+  const cl=byCat('cl').reduce((s,a)=>s+g(a.id),0);
+  const ll=byCat('ll').reduce((s,a)=>s+g(a.id),0);
+  const tl=cl+ll;
+  const aociVal=calcAOCI();
+  const nw=ta-tl+(period!=='fy25'?aociVal:0);
+  // expose accumDep and g so renderBS can use it directly
+  return{g,accumDep,ca,nca,oa,ta,cl,ll,tl,aoci:period!=='fy25'?aociVal:0,nw,v401,veh};
+}
+
+function cutoffOf(period){
+  const M={today:new Date().toISOString().slice(0,10),
+    jan:'2026-01-31',feb:'2026-02-28',mar:'2026-03-31',apr:'2026-04-30',
+    may:'2026-05-31',jun:'2026-06-30',jul:'2026-07-31',aug:'2026-08-31',
+    sep:'2026-09-30',oct:'2026-10-31',nov:'2026-11-30',dec:'2026-12-31',
+    fy25:'2025-12-31'};
+  return M[period]||M.today;
+}
+function periodLabel(p){
+  const M={today:'Today',fy25:'FY2025',jan:'January 31',feb:'February 28',mar:'March 31',apr:'April 30',
+    may:'May 31',jun:'June 30',jul:'July 31',aug:'August 31',sep:'September 30',oct:'October 31',nov:'November 30',dec:'December 31'};
+  return M[p]||'Today';
+}
+
+function calcAOCI(){
+  let t=0;
+  (D.positions||[]).forEach(pos=>{
+    const cost=posCost(pos),sh=posShares(pos),lp=posLivePrice(pos);
+    if(sh>0&&lp>0)t+=(sh*lp)-cost;
+  });
+  return Math.round(t*100)/100;
+}
+
+// ─── NAV ─────────────────────────────────────────────────────
+document.querySelectorAll('.nt').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.nt').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  document.getElementById('page-'+t.dataset.pg).classList.add('active');
+  renderPage(t.dataset.pg);
+}));
+function renderPage(n){
+  if(n==='bs')renderBS();
+  else if(n==='is')renderIS();
+  else if(n==='je')renderJE();
+  else if(n==='inv')renderInv();
+  else if(n==='al')renderAL();
+  else if(n==='dep')renderDep();
+  else if(n==='ml')renderML();
+  else if(n==='fn')renderFN();
+  else if(n==='coa')renderCOA();
+  else if(n==='export')renderExport();
+}
+
+// ─── CHART OF ACCOUNTS ───────────────────────────────────────
+function renderCOA(){
+  const el=document.getElementById('coa-body');
+  const groups=[
+    {label:'Current Assets',cat:'ca',type:'asset'},
+    {label:'Non-Current Assets',cat:'nca',type:'asset'},
+    {label:'Other Assets',cat:'oa',type:'asset'},
+    {label:'Current Liabilities',cat:'cl',type:'liability'},
+    {label:'Long-Term Liabilities',cat:'ll',type:'liability'},
+    {label:'Equity',cat:'eq',type:'equity'},
+    {label:'Income',cat:'inc',type:'income'},
+    {label:'Expenses',cat:'exp',type:'expense'},
+  ];
+  let h='';
+  groups.forEach(g=>{
+    const accts=D.accounts.filter(a=>a.cat===g.cat);
+    if(!accts.length)return;
+    h+=`<div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--bdr2)">${g.label}</div>`;
+    accts.forEach(a=>{
+      const inUse=D.journalEntries.some(je=>je.lines.some(l=>l.aid===a.id));
+      h+=`<div onclick="openEditAcct('${a.id}')" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bdr);cursor:pointer;transition:opacity .15s" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            ${a.par?'<span style="color:var(--txt3);font-size:12px">↳</span>':''}
+            <span style="font-size:13px;color:var(--txt)">${a.name}</span>
+            ${a.nick?`<span style="font-size:9px;color:var(--acc2);font-style:italic">[${a.nick}]</span>`:''}
+            ${(a.fnt||[]).map(f=>`<span class="fnref">${f}</span>`).join('')}
+          </div>
+          <div style="font-size:8.5px;color:var(--txt3);margin-top:2px">
+            <code style="background:var(--surf2);padding:1px 5px;border-radius:3px;font-size:8px">${a.id}</code>
+            · ${a.nb} normal · ${a.cat}
+          </div>
+        </div>
+        <span style="font-size:10px;color:var(--txt3)">›</span>
+      </div>`;
+    });
+  });
+  el.innerHTML=h||'<div class="empty">No accounts</div>';
+}
+
+let EDIT_ACCT_ID=null;
+function openAddAcct(){
+  EDIT_ACCT_ID=null;
+  document.getElementById('acct-modal-title').textContent='Add Account';
+  ['ac-id','ac-nm','ac-nick','ac-par'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('ac-type').value='asset';
+  document.getElementById('ac-nb').value='debit';
+  document.getElementById('ac-cat').value='ca';
+  document.getElementById('ac-id').disabled=false;
+  document.getElementById('btn-del-acct').style.display='none';
+  document.getElementById('m-acct').classList.remove('h');
+}
+function openEditAcct(id){
+  EDIT_ACCT_ID=id;
+  const a=D.accounts.find(x=>x.id===id);if(!a)return;
+  document.getElementById('acct-modal-title').textContent='Edit Account';
+  document.getElementById('ac-id').value=a.id;
+  document.getElementById('ac-id').disabled=true;
+  document.getElementById('ac-nm').value=a.name;
+  document.getElementById('ac-nick').value=a.nick||'';
+  document.getElementById('ac-type').value=a.type;
+  document.getElementById('ac-nb').value=a.nb;
+  document.getElementById('ac-cat').value=a.cat;
+  document.getElementById('ac-par').value=a.par||'';
+  document.getElementById('btn-del-acct').style.display='';
+  document.getElementById('m-acct').classList.remove('h');
+}
+function deleteAcctFromModal(){
+  document.getElementById('m-acct').classList.add('h');
+  if(EDIT_ACCT_ID)deleteAcct(EDIT_ACCT_ID);
+}
+function deleteAcct(id){
+  const a=D.accounts.find(x=>x.id===id);if(!a)return;
+  const refs=D.journalEntries.filter(je=>je.lines.some(l=>l.aid===id));
+  if(refs.length){
+    const sample=refs.slice(0,3).map(je=>`• ${je.date} — ${je.desc}`).join('\n');
+    const more=refs.length>3?`\n…and ${refs.length-3} more`:'';
+    const go=confirm(`"${a.name}" is referenced in ${refs.length} journal entr${refs.length===1?'y':'ies'}:\n\n${sample}${more}\n\nDeleting this account will orphan those entries. You may need an adjusting entry to reclassify them.\n\nProceed anyway?`);
+    if(!go)return;
+  }else{
+    if(!confirm(`Delete "${a.name}"? This cannot be undone.`))return;
+  }
+  D.accounts=D.accounts.filter(x=>x.id!==id);
+  delete D.balances[id];
+  save();renderCOA();renderBS();
+}
+function saveAcct(){
+  const id=EDIT_ACCT_ID||document.getElementById('ac-id').value.trim().replace(/\s+/g,'-').toLowerCase();
+  const name=document.getElementById('ac-nm').value.trim();
+  if(!id||!name){alert('ID and name required');return;}
+  if(!EDIT_ACCT_ID&&D.accounts.find(a=>a.id===id)){alert('Account ID already exists');return;}
+  const acct={
+    id,name,
+    nick:document.getElementById('ac-nick').value.trim()||null,
+    type:document.getElementById('ac-type').value,
+    nb:document.getElementById('ac-nb').value,
+    cat:document.getElementById('ac-cat').value,
+    par:document.getElementById('ac-par').value.trim()||null,
+    fnt:[]
+  };
+  if(EDIT_ACCT_ID){
+    const i=D.accounts.findIndex(a=>a.id===EDIT_ACCT_ID);
+    if(i>=0)D.accounts[i]={...D.accounts[i],...acct};
+  }else{
+    D.accounts.push(acct);
+    D.balances[id]={c:0,p:0};
+  }
+  save();
+  document.getElementById('m-acct').classList.add('h');
+  renderCOA();renderBS();
+}
+document.getElementById('ac-type').addEventListener('change',()=>{
+  const t=document.getElementById('ac-type').value;
+  const nb=document.getElementById('ac-nb');
+  const cat=document.getElementById('ac-cat');
+  nb.value=t==='asset'||t==='expense'?'debit':'credit';
+  const catMap={asset:'ca',liability:'cl',equity:'eq',income:'inc',expense:'exp'};
+  cat.value=catMap[t]||'ca';
+});
+document.getElementById('btn-cxl-acct').addEventListener('click',()=>document.getElementById('m-acct').classList.add('h'));
+document.getElementById('btn-sv-acct').addEventListener('click',saveAcct);
+
+// ─── PERIOD PICKER ────────────────────────────────────────────
+function buildPeriodOpts(includeFY25First){
+  const today=new Date();
+  const months=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+  const labels=['January 31','February 28','March 31','April 30','May 31','June 30','July 31','August 31','September 30','October 31','November 30','December 31'];
+  const ends=[new Date('2026-01-31T12:00:00'),new Date('2026-02-28T12:00:00'),new Date('2026-03-31T12:00:00'),new Date('2026-04-30T12:00:00'),
+              new Date('2026-05-31T12:00:00'),new Date('2026-06-30T12:00:00'),new Date('2026-07-31T12:00:00'),new Date('2026-08-31T12:00:00'),
+              new Date('2026-09-30T12:00:00'),new Date('2026-10-31T12:00:00'),new Date('2026-11-30T12:00:00'),new Date('2026-12-31T12:00:00')];
+  // collect passed months, then reverse so most recent is first
+  const passed=[];
+  months.forEach((m,i)=>{if(ends[i]<today)passed.push({val:m,label:labels[i]});});
+  passed.reverse();
+  const opts=[];
+  if(!includeFY25First)opts.push({val:'today',label:'Today'});
+  if(includeFY25First)opts.push({val:'fy25',label:'FY2025'});
+  passed.forEach(x=>opts.push(x));
+  if(!includeFY25First)opts.push({val:'fy25',label:'FY2025'});
+  return opts;
+}
+
+function showPeriodPicker(side){
+  let existing=document.getElementById('period-picker');
+  if(existing){existing.remove();return;}
+  const opts=buildPeriodOpts(side==='right');
+  const cur=side==='left'?BS_L:BS_R;
+  const el=document.createElement('div');
+  el.id='period-picker';
+  el.innerHTML=`<div class="picker-box">${opts.map(o=>`<div class="picker-opt${o.val===cur?' sel':''}" data-v="${o.val}">${o.label}</div>`).join('')}</div>`;
+  el.addEventListener('click',e=>{
+    const v=e.target.dataset.v;
+    if(v){if(side==='left')BS_L=v;else BS_R=v;renderBS();}
+    el.remove();
+  });
+  document.body.appendChild(el);
+}
+
+// ─── BALANCE SHEET ────────────────────────────────────────────
+function bsLine(name,nick,fnts,c,p,indent=0,drillId=null,cashAmt=null){
+  // Derive live footnote refs for this account from D.footnotes (by account ID lookup)
+  // fnts is the account ID string OR array of hardcoded refs — we augment with live refs
+  const liveRefs=(D.footnotes||[]).filter(fn=>(fn.accounts||[]).includes(drillId||'')).map(fn=>fn.ref);
+  const allRefs=[...(fnts||[]),...liveRefs.filter(r=>!(fnts||[]).includes(r))];
+  const fnHTML=allRefs.map(r=>`<span class="fnref">${r}</span>`).join('');
+  const nickHTML=nick?`<span class="nick">[${nick}]</span>`:'';
+  const cashHTML=(cashAmt!=null)?`<span style="font-size:9px;color:var(--amber);margin-left:6px;white-space:nowrap" title="Cash in account">$${ff(cashAmt)} cash</span>`:'';
+  const indCls=indent===2?'sub2':indent===1?'sub':'';
+  const drillCls=drillId?' drill':'';
+  const cls=`bsl ${indCls}${drillCls}`.trim();
+  const dc=drillId?` onclick="openDrill('${drillId}')"` : '';
+  return`<div class="${cls}"${dc}><span class="bla">${name}${nickHTML}${fnHTML}${cashHTML}</span><span class="bam">${c!==null?ff(c):''}</span><span class="bam dim">${p!==null?ff(p):''}</span></div>`;
+}
+
+function renderBS(){
+  // Sync period button labels
+  const lL=periodLabel(BS_L),lR=periodLabel(BS_R);
+  ['bs-lbl-l','bs-lbl-l2'].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent=lL;el.className='period-btn';}});
+  ['bs-lbl-r','bs-lbl-r2'].forEach(id=>{const el=document.getElementById(id);if(el){el.textContent=lR;el.className='period-btn dim';}});
+  document.getElementById('bs-asof').textContent='As of '+lL;
+
+  const C=snap(BS_L), P=snap(BS_R);
+  const gl=C.g, gr=P.g;
+
+  // Metrics
+  document.getElementById('bs-metrics').innerHTML=[
+    {l:'Total Assets',v:C.ta,cls:''},
+    {l:'Total Liabilities',v:C.tl,cls:'neg'},
+    {l:'Net Worth',v:C.nw,cls:C.nw>=0?'pos':'neg'},
+    {l:'AOCI',v:C.aoci,cls:C.aoci>=0?'pos':'neg'},
+  ].map(m=>`<div class="mc"><div class="ml">${m.l}</div><div class="mv ${m.cls}">$${ff(m.v)}</div></div>`).join('');
+
+  // Build layout HTML
+  const ic=D.investmentCash||{};
+  let h='<div style="display:grid;grid-template-columns:1fr;gap:0">';
+
+  // ─ Assets ─
+  h+=`<div>
+  <div class="col-hdrs">
+    <span id="bs-lbl-l" class="period-btn" onclick="showPeriodPicker('left')">${lL}</span>
+    <span id="bs-lbl-r" class="period-btn dim" onclick="showPeriodPicker('right')">${lR}</span>
+  </div>
+  <div class="bs-sh">Assets</div>
+  <div class="bs-sub">Current Assets</div>`;
+
+  byCat('ca').forEach(a=>{
+    const ks=kids(a.id);
+    const cashBadge=(a.id==='schwab'&&ic['schwab']>0)?ic['schwab']:null;
+    if(ks.length){
+      // Parent account — not drillable (would always show 0 transactions)
+      const sc=ks.reduce((s,k)=>s+gl(k.id),0),sp=ks.reduce((s,k)=>s+gr(k.id),0);
+      h+=bsLine(a.name,a.nick,a.fnt,sc,sp,0,null,cashBadge); // no drillId
+      ks.forEach(k=>h+=bsLine(k.name,k.nick,k.fnt,gl(k.id),gr(k.id),2,k.id));
+    }else{
+      h+=bsLine(a.name,a.nick,a.fnt,gl(a.id),gr(a.id),0,a.id,cashBadge);
+    }
+  });
+  h+=`<div class="bsl tot"><span class="bla">Total current assets</span><span class="bam">${ff(C.ca)}</span><span class="bam dim">${ff(P.ca)}</span></div>`;
+  h+=`<div class="bs-sub" style="margin-top:6px">Non-Current Assets</div>`;
+
+  // BNY 401k — parent row not drillable, sub-accounts are
+  h+=bsLine('BNY 401(k) Savings Plan',null,['(a)'],C.v401,P.v401,0,null,null);
+  h+=bsLine('Pre-Tax Deferrals',null,[],gl('bny401k-pt'),gr('bny401k-pt'),2,'bny401k-pt');
+  h+=bsLine('Company Match',null,[],gl('bny401k-cm'),gr('bny401k-cm'),2,'bny401k-cm');
+  h+=bsLine('Vanguard Roth IRA',null,['(b)'],gl('vanguard'),gr('vanguard'),0,'vanguard',ic['vanguard']>0?ic['vanguard']:null);
+  h+=bsLine('Marcus','rainy day',[],gl('marcus'),gr('marcus'),0,'marcus');
+  h+=bsLine('Vehicle – 2026 Kia K5',null,[],C.veh,P.veh,0,'vehicle');
+  h+=bsLine('Cost',null,[],gl('vehicle'),gr('vehicle'),2);
+  h+=bsLine('Less: Accum. Depreciation',null,[],C.accumDep,P.accumDep,2);
+  h+=`<div class="bsl tot"><span class="bla">Total non-current assets</span><span class="bam">${ff(C.nca)}</span><span class="bam dim">${ff(P.nca)}</span></div>`;
+  h+=`<div class="bs-sub" style="margin-top:6px">Other Assets</div>`;
+  byCat('oa').forEach(a=>{
+    const cashBadgeOA=(a.id==='bny-espp'&&ic['bny-espp']>0)?ic['bny-espp']:null;
+    h+=bsLine(a.name,a.nick,a.fnt,gl(a.id),gr(a.id),0,a.id,cashBadgeOA);
+  });
+  h+=`<div class="bsl tot"><span class="bla">Total other assets</span><span class="bam">${ff(C.oa)}</span><span class="bam dim">${ff(P.oa)}</span></div>`;
+  h+=`<div class="bsl gtot"><span class="bla">Total assets</span><span class="bam">${ff(C.ta)}</span><span class="bam dim">${ff(P.ta)}</span></div>`;
+
+  // ─ Liabilities ─
+  h+=`</div><div style="margin-top:18px">
+  <div class="col-hdrs">
+    <span id="bs-lbl-l2" class="period-btn" onclick="showPeriodPicker('left')">${lL}</span>
+    <span id="bs-lbl-r2" class="period-btn dim" onclick="showPeriodPicker('right')">${lR}</span>
+  </div>
+  <div class="bs-sh">Liabilities &amp; Net Worth</div>
+  <div class="bs-sub">Current Liabilities</div>`;
+  byCat('cl').forEach(a=>h+=bsLine(a.name,a.nick,a.fnt,gl(a.id),gr(a.id),0,a.id));
+  h+=`<div class="bsl tot"><span class="bla">Total current liabilities</span><span class="bam">${ff(C.cl)}</span><span class="bam dim">${ff(P.cl)}</span></div>`;
+  h+=`<div class="bs-sub" style="margin-top:6px">Long-Term Liabilities</div>`;
+  byCat('ll').forEach(a=>h+=bsLine(a.name,a.nick,a.fnt,gl(a.id),gr(a.id),0,a.id));
+  h+=`<div class="bsl tot"><span class="bla">Total long-term liabilities</span><span class="bam">${ff(C.ll)}</span><span class="bam dim">${ff(P.ll)}</span></div>`;
+  h+=`<div class="bsl tot" style="margin-top:4px"><span class="bla" style="font-weight:700">Total liabilities</span><span class="bam" style="font-weight:700">${ff(C.tl)}</span><span class="bam dim" style="font-weight:700">${ff(P.tl)}</span></div>`;
+
+  // ─ Equity ─
+  const re=C.ta-C.tl-C.aoci,reP=P.ta-P.tl;
+  h+=`<div class="bs-sub" style="margin-top:6px">Net Worth</div>`;
+  h+=`<div class="bsl"><span class="bla">Retained Earnings</span><span class="bam">${ff(re)}</span><span class="bam dim">${ff(reP)}</span></div>`;
+  h+=`<div class="bsl"><span class="bla">AOCI — Unrealized G/L</span><span class="bam ${C.aoci>=0?'pos':'neg'}">${ff(C.aoci)}</span><span class="bam dim">—</span></div>`;
+  h+=`<div class="bsl gtot"><span class="bla">Total net worth</span><span class="bam">${ff(C.nw)}</span><span class="bam dim">${ff(P.nw)}</span></div>`;
+
+  // Balance check
+  const chk=C.ta-(C.tl+C.nw);
+  h+=`<div class="bsl" style="margin-top:8px;border-top:1px solid var(--bdr2)">
+    <span class="bla" style="font-size:8.5px;color:var(--txt3)">Balance check (Assets − Liabilities − NW)</span>
+    <span class="bam" style="font-size:8.5px;color:${Math.abs(chk)<0.02?'var(--green)':'var(--red)'}">${ff(chk)}</span></div>`;
+  h+='</div></div>';
+
+  document.getElementById('bs-body').innerHTML=h;
+
+  // Net worth card
+  const bny401=gl('bny401k-pt')+gl('bny401k-cm'),roth=gl('vanguard'),liquid=C.nw-bny401-roth;
+  const nwCard=document.getElementById('bs-nw-card');
+  nwCard.style.display='block';
+  nwCard.innerHTML=`<div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--acc);margin-bottom:10px">Net Worth Analysis</div>
+    <div class="isl"><span class="il">Total net worth</span><span class="ia pos">$${ff(C.nw)}</span></div>
+    <div class="isl"><span class="il" style="padding-left:12px;font-size:9px;color:var(--txt3)">of which: BNY 401(k)</span><span class="ia" style="font-size:9px;color:var(--txt3)">$${ff(bny401)}</span></div>
+    <div class="isl"><span class="il" style="padding-left:12px;font-size:9px;color:var(--txt3)">of which: Vanguard Roth IRA</span><span class="ia" style="font-size:9px;color:var(--txt3)">$${ff(roth)}</span></div>
+    <div class="isl" style="border-top:1px solid var(--bdr2);margin-top:4px"><span class="il">Liquid net worth (excl. 401k &amp; Roth)</span><span class="ia ${liquid>=0?'pos':'neg'}">$${ff(liquid)}</span></div>
+    <div class="isl" style="border:none"><span class="il" style="font-size:9px;color:var(--txt3)">YoY change</span><span class="ia" style="font-size:9px;color:var(--txt3)">${ff(C.nw-P.nw)}</span></div>`;
+
+  // Footnotes
+  if(D.footnotes&&D.footnotes.length){
+    let fh='<div style="font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--txt3);margin-bottom:6px">Notes</div>';
+    D.footnotes.forEach(fn=>fh+=`<div class="fn-item"><strong>${fn.ref}</strong> ${fn.text}</div>`);
+    document.getElementById('bs-fns').innerHTML=fh;
+  }
+
+  // Pending JEs banner
+  const pends=D.journalEntries.filter(je=>je.status==='pending');
+  const pendEl=document.getElementById('bs-pending');
+  if(pendEl){
+    if(pends.length){
+      let ph=`<div style="font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--amber);margin-bottom:8px">⚠ Pending Entries (${pends.length}) — not reflected in balances</div>`;
+      pends.forEach(je=>{
+        ph+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,176,32,.15)">
+          <div><span style="font-size:10px;color:var(--amber);font-family:monospace">${je.date}</span> <span style="font-size:12px;color:var(--txt)">${je.desc}</span></div>
+          <div style="display:flex;gap:5px">
+            <button class="btn btn-sm" style="font-size:8px;border-color:var(--amber);color:var(--amber)" onclick="editJE('${je.id}')">Edit</button>
+            <button class="btn btn-sm" style="font-size:8px" onclick="togglePending('${je.id}')">✓ Clear</button>
+          </div>
+        </div>`;
+      });
+      pendEl.innerHTML=ph;
+      pendEl.style.display='block';
+    }else{
+      pendEl.style.display='none';
+    }
+  }
+}
+
+// ─── DRILL-DOWN ───────────────────────────────────────────────
+function openDrill(acctId){
+  const a=acctById(acctId);
+  const label=a?a.name:acctId;
+  document.getElementById('drill-title').textContent=label;
+
+  const cutoff=cutoffOf(BS_L);
+  const priorBal=(D.balances[acctId]||{}).p||0;
+
+  // All cleared JEs touching this account up to cutoff
+  const jes=D.journalEntries
+    .filter(je=>je.status!=='pending'&&je.date<=cutoff&&je.lines.some(l=>l.aid===acctId))
+    .sort((a,b)=>a.date>b.date?1:-1);
+
+  // Walk forward to build running balances
+  let run=priorBal;
+  const rows=jes.map(je=>{
+    const ls=je.lines.filter(l=>l.aid===acctId);
+    const dr=ls.reduce((s,l)=>s+l.dr,0);
+    const cr=ls.reduce((s,l)=>s+l.cr,0);
+    const mv=a&&a.nb==='debit'?(dr-cr):(cr-dr);
+    run=Math.round((run+mv)*100)/100;
+    return{je,dr,cr,mv,bal:run};
+  });
+  const currentBal=run;
+
+  // Summary banner
+  document.getElementById('drill-summary').innerHTML=
+    `<div style="display:flex;justify-content:space-between;align-items:center;background:var(--surf2);border-radius:8px;padding:10px 12px">
+      <div><div style="font-size:8.5px;color:var(--txt3);margin-bottom:2px">As of ${periodLabel(BS_L)}</div><div style="font-size:20px;font-weight:700;font-family:monospace;color:var(--txt)">$${ff(currentBal)}</div></div>
+      <div style="text-align:right"><div style="font-size:8.5px;color:var(--txt3);margin-bottom:2px">FY2025 Opening</div><div style="font-size:14px;font-weight:600;font-family:monospace;color:var(--txt3)">$${ff(priorBal)}</div></div>
+    </div>`;
+
+  if(!jes.length){
+    document.getElementById('drill-content').innerHTML=`<div style="padding:16px 0;font-size:11px;color:var(--txt3)">No transactions in this period. Balance carried from FY2025 ending balance of <strong>$${ff(priorBal)}</strong>.</div>`;
+    document.getElementById('m-drill').classList.remove('h');
+    return;
+  }
+
+  // Table: reversed (newest top → oldest bottom = prior year at bottom)
+  const bc2={'income':'b-inc','expense':'b-exp','transfer':'b-trn','asset':'b-ast'};
+  const selfA=acctById(acctId);
+  const selfLabel=(selfA?.name||'').toLowerCase();
+  const selfNick=(selfA?.nick||'').toLowerCase();
+  const tRows=[...rows].reverse().map(o=>{
+    const je=o.je,pend=je.status==='pending';
+    const mvStr=`<span class="${o.mv>=0?'pos':'neg'}">${o.mv>=0?'+':''}${ff(o.mv)}</span>`;
+    // Counterpart = other sides of the JE — this is the informative label
+    const otherLines=je.lines.filter(l=>l.aid!==acctId);
+    const cpartNames=otherLines.map(l=>{const a=acctById(l.aid);return a?a.name:l.aid;}).join(' / ');
+    // Only show JE desc if it adds info beyond the account name
+    const descLower=je.desc.toLowerCase();
+    const descIsRedundant=descLower===selfLabel||descLower===selfNick||cpartNames.toLowerCase().includes(descLower)||descLower===selfA?.id;
+    const secondLabel=!descIsRedundant?je.desc:'';
+    // Flag pure bank-to-bank transfers
+    const allCash=je.lines.every(l=>{const a=acctById(l.aid);return a&&(a.cat==='ca');});
+    const isTransfer=je.cat==='transfer';
+    return`<tr onclick="document.getElementById('m-drill').classList.add('h');editJE('${je.id}')" style="cursor:pointer">
+      <td style="white-space:nowrap">${je.date}<br><span style="font-size:7.5px;color:var(--txt3)">${je.period}</span></td>
+      <td style="text-align:left;max-width:180px">
+        <div style="font-size:12px;color:var(--txt);font-weight:500">${cpartNames||je.desc}${pend?'<span style="font-size:7px;color:var(--amber);margin-left:3px">PEND</span>':''}</div>
+        ${secondLabel?`<div style="font-size:8px;color:var(--txt3);margin-top:1px">${secondLabel}</div>`:''}
+        <div style="display:flex;gap:3px;margin-top:2px;flex-wrap:wrap">
+          <span class="badge ${bc2[je.cat]||'b-trn'}" style="font-size:7px;padding:1px 4px">${je.cat}</span>
+          ${allCash&&isTransfer?'<span style="font-size:7px;padding:1px 4px;background:rgba(90,122,154,.12);border:1px solid rgba(90,122,154,.25);border-radius:3px;color:var(--txt3)">bank xfer</span>':''}
+        </div>
+      </td>
+      <td style="color:var(--acc2)">${o.dr?ff(o.dr):''}</td>
+      <td style="color:var(--txt3)">${o.cr?ff(o.cr):''}</td>
+      <td>${mvStr}</td>
+      <td style="font-weight:600;color:var(--txt)">${ff(o.bal)}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('drill-content').innerHTML=`
+    <div style="font-size:8.5px;color:var(--txt3);margin-bottom:8px">${jes.length} transaction${jes.length!==1?'s':''} · <strong>${periodLabel(BS_L)}</strong></div>
+    <div class="tw"><table class="dt">
+      <thead><tr>
+        <th style="text-align:left">Date</th>
+        <th style="text-align:left">Description</th>
+        <th>DR</th><th>CR</th>
+        <th style="min-width:50px">Δ</th>
+        <th style="min-width:70px">Balance</th>
+      </tr></thead>
+      <tbody>
+        <tr style="background:rgba(24,200,255,.12)">
+          <td colspan="5" style="text-align:left;font-size:8.5px;color:var(--acc);font-weight:700">AS OF ${periodLabel(BS_L).toUpperCase()}</td>
+          <td style="font-weight:700;color:var(--acc);font-size:14px">${ff(currentBal)}</td>
+        </tr>
+        ${tRows}
+        <tr style="opacity:.55;border-top:1px solid var(--bdr2)">
+          <td colspan="5" style="text-align:left;font-size:8px;color:var(--txt3)">FY2025 Opening Balance</td>
+          <td style="font-weight:600;color:var(--txt3)">${ff(priorBal)}</td>
+        </tr>
+      </tbody>
+    </table></div>`;
+  document.getElementById('m-drill').classList.remove('h');
+}
+
+// ─── INCOME STATEMENT ─────────────────────────────────────────
+function pFilter(je,p){
+  if(p==='ytd')return je.period&&je.period.startsWith('2026');
+  const monthMap={jan:'2026-01',feb:'2026-02',mar:'2026-03',apr:'2026-04',
+    may:'2026-05',jun:'2026-06',jul:'2026-07',aug:'2026-08',
+    sep:'2026-09',oct:'2026-10',nov:'2026-11',dec:'2026-12'};
+  if(monthMap[p])return je.period===monthMap[p];
+  const qMap={q1:['2026-01','2026-02','2026-03'],q2:['2026-04','2026-05','2026-06'],
+    q3:['2026-07','2026-08','2026-09'],q4:['2026-10','2026-11','2026-12']};
+  if(qMap[p])return qMap[p].includes(je.period);
+  return true;
+}
+
+function renderIS(){
+  document.querySelectorAll('#is-pills .pill').forEach(p=>p.classList.toggle('active',p.dataset.p===IS_PERIOD));
+  const incA=D.accounts.filter(a=>a.cat==='inc');
+  const expA=D.accounts.filter(a=>a.cat==='exp'&&a.id!=='dep-exp');
+  const iT={},eT={};
+  D.journalEntries.filter(je=>je.status!=='pending'&&pFilter(je,IS_PERIOD)).forEach(je=>je.lines.forEach(l=>{
+    const a=acctById(l.aid);if(!a)return;
+    if(a.type==='income')iT[a.id]=(iT[a.id]||0)+(l.cr-l.dr);
+    if(a.type==='expense'&&a.id!=='dep-exp')eT[a.id]=(eT[a.id]||0)+(l.dr-l.cr);
+  }));
+  const ti=Object.values(iT).reduce((s,v)=>s+v,0);
+  const te=Object.values(eT).reduce((s,v)=>s+v,0);
+  const ni=ti-te;
+
+  const incRows=incA.map(a=>{const v=iT[a.id]||0;if(!v)return'';
+    return`<div class="isl drill-row" onclick="drillIS('${a.id}','${a.name}')"><span class="il">${a.name}</span><span class="ia pos">${ff(v)}</span></div>`;
+  }).join('');
+  const expRows=expA.map(a=>{const v=eT[a.id]||0;if(!v)return'';
+    return`<div class="isl drill-row" onclick="drillIS('${a.id}','${a.name}')"><span class="il">${a.name}</span><span class="ia neg">(${ff(v)})</span></div>`;
+  }).join('');
+
+  const aoci=calcAOCI();
+  document.getElementById('is-content').innerHTML=`
+    <div class="isl sec-h"><span class="il">Income</span></div>
+    ${incRows||'<div style="padding:6px 0;font-size:9.5px;color:var(--txt3)">No income entries</div>'}
+    <div class="isl tot"><span class="il">Total income</span><span class="ia pos">${ff(ti)}</span></div>
+    <div class="isl sec-h" style="margin-top:10px"><span class="il">Expenses</span></div>
+    ${expRows||'<div style="padding:6px 0;font-size:9.5px;color:var(--txt3)">No expense entries</div>'}
+    <div class="isl tot"><span class="il">Total expenses</span><span class="ia neg">(${ff(te)})</span></div>
+    <div class="isl net"><span class="il">Net income</span><span class="ia ${ni>=0?'pos':'neg'}">${ni<0?'(':''}${ff(Math.abs(ni))}${ni<0?')':''}</span></div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--bdr)">
+      <div class="isl sec-h"><span class="il">OCI — Other Comprehensive Income</span></div>
+      <div class="isl"><span class="il" style="padding-left:12px">Unrealized G/L on all positions</span><span class="ia ${aoci>=0?'pos':'neg'}">${ff(aoci)}</span></div>
+      <div class="isl net"><span class="il">Comprehensive income</span><span class="ia ${(ni+aoci)>=0?'pos':'neg'}">${(ni+aoci)<0?'(':''}${ff(Math.abs(ni+aoci))}${(ni+aoci)<0?')':''}</span></div>
+    </div>`;
+}
+
+document.getElementById('is-pills').addEventListener('click',e=>{if(e.target.dataset.p){IS_PERIOD=e.target.dataset.p;renderIS();}});
+
+function drillIS(acctId,label){
+  const a=acctById(acctId);
+  const isIncome=a&&a.type==='income';
+  document.getElementById('drill-title').textContent=label;
+  const jes=D.journalEntries
+    .filter(je=>je.status!=='pending'&&pFilter(je,IS_PERIOD)&&je.lines.some(l=>l.aid===acctId))
+    .sort((a,b)=>a.date>b.date?1:-1); // oldest first to compute running total
+
+  if(!jes.length){
+    document.getElementById('drill-summary').innerHTML='';
+    document.getElementById('drill-content').innerHTML=`<div class="empty">No entries for this period</div>`;
+    document.getElementById('m-drill').classList.remove('h');
+    return;
+  }
+
+  // Walk forward building running total
+  let run=0;
+  const withRun=jes.map(je=>{
+    const ls=je.lines.filter(l=>l.aid===acctId);
+    const dr=ls.reduce((s,l)=>s+l.dr,0),cr=ls.reduce((s,l)=>s+l.cr,0);
+    const mv=isIncome?(cr-dr):(dr-cr); // positive = more income / more expense
+    run=Math.round((run+mv)*100)/100;
+    return{je,dr,cr,mv,run};
+  });
+  const periodTotal=run;
+
+  // Summary banner
+  const periodName=IS_PERIOD==='ytd'?'YTD 2026':IS_PERIOD.toUpperCase();
+  document.getElementById('drill-summary').innerHTML=
+    `<div style="display:flex;justify-content:space-between;align-items:center;background:var(--surf2);border-radius:8px;padding:10px 12px">
+      <div><div style="font-size:8.5px;color:var(--txt3);margin-bottom:2px">${isIncome?'Total Revenue':'Total Expense'} — ${periodName}</div>
+        <div style="font-size:20px;font-weight:700;font-family:monospace;color:var(--txt)">$${ff(periodTotal)}</div></div>
+      <div style="text-align:right"><div style="font-size:8.5px;color:var(--txt3);margin-bottom:2px">${jes.length} transaction${jes.length!==1?'s':''}</div>
+        <div style="font-size:12px;font-weight:600;color:var(--txt2)">${periodName}</div></div>
+    </div>`;
+
+  // Table newest first with running total waterfall
+  const rows=[...withRun].reverse().map(o=>{
+    const pend=o.je.status==='pending';
+    return`<tr>
+      <td style="white-space:nowrap">${o.je.date}<br><span style="font-size:7.5px;color:var(--txt3)">${o.je.period}</span></td>
+      <td style="text-align:left">${o.je.desc}${pend?'<span style="font-size:7px;color:var(--amber);margin-left:3px">PEND</span>':''}</td>
+      <td style="color:var(--acc2)">${o.dr?ff(o.dr):''}</td>
+      <td style="color:var(--txt3)">${o.cr?ff(o.cr):''}</td>
+      <td class="${o.mv>=0?'pos':'neg'}">${o.mv>=0?'+':''}${ff(o.mv)}</td>
+      <td style="font-weight:600;color:var(--txt)">${ff(o.run)}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('drill-content').innerHTML=`
+    <div class="tw"><table class="dt">
+      <thead><tr>
+        <th style="text-align:left">Date</th><th style="text-align:left">Description</th>
+        <th>DR</th><th>CR</th><th style="min-width:50px">Amount</th>
+        <th style="min-width:70px">Running Total</th>
+      </tr></thead>
+      <tbody>
+        <tr style="background:rgba(24,200,255,.12)">
+          <td colspan="5" style="text-align:left;font-size:8.5px;color:var(--acc);font-weight:700">PERIOD TOTAL — ${periodName}</td>
+          <td style="font-weight:700;color:var(--acc);font-size:14px">${ff(periodTotal)}</td>
+        </tr>
+        ${rows}
+        <tr style="opacity:.5;border-top:1px solid var(--bdr2)">
+          <td colspan="5" style="text-align:left;font-size:8px;color:var(--txt3)">Period Opening — $0.00 (income resets each period)</td>
+          <td style="font-weight:600;color:var(--txt3)">0.00</td>
+        </tr>
+      </tbody>
+    </table></div>`;
+  document.getElementById('m-drill').classList.remove('h');
+}
+
+// ─── JOURNAL ENTRIES ──────────────────────────────────────────
+function renderJE(){
+  document.querySelectorAll('#je-filters .pill').forEach(p=>p.classList.toggle('active',p.dataset.f===JE_FILTER));
+  let es=[...D.journalEntries];
+  if(JE_FILTER==='pending')es=es.filter(e=>e.status==='pending');
+  else if(JE_FILTER!=='all')es=es.filter(e=>e.cat===JE_FILTER);
+  es.sort((a,b)=>b.date>a.date?1:-1);
+  if(!es.length){document.getElementById('je-list').innerHTML='<div class="empty">No entries</div>';return;}
+  const bc={'income':'b-inc','expense':'b-exp','transfer':'b-trn','asset':'b-ast'};
+  document.getElementById('je-list').innerHTML=es.map(je=>{
+    const pend=je.status==='pending';
+    const lines=je.lines.map(l=>{const a=acctById(l.aid);return`<div class="je-ln"><span class="je-ac">${a?a.name:l.aid}</span><span class="je-dr">${l.dr?ff(l.dr):''}</span><span class="je-cr">${l.cr?ff(l.cr):''}</span></div>`;}).join('');
+    return`<div class="je-card${pend?' pending':''}" onclick="editJE('${je.id}')" style="cursor:pointer">
+      <div class="je-meta">
+        <span class="je-dt">${je.date}</span>
+        <span style="font-size:8px;color:var(--txt3)">${je.period||''}</span>
+        <span class="je-ds">${je.desc}</span>
+        <span class="badge ${bc[je.cat]||'b-trn'}">${je.cat}</span>
+        ${pend?'<span class="badge b-pnd">pending</span>':''}
+      </div>
+      <div style="display:flex;gap:4px;padding:2px 0 4px">
+        <span style="flex:1;font-size:7.5px;color:var(--txt3);text-transform:uppercase">Account</span>
+        <span style="min-width:60px;text-align:right;font-size:7.5px;color:var(--acc2);text-transform:uppercase">Debit</span>
+        <span style="min-width:60px;text-align:right;font-size:7.5px;color:var(--txt3);text-transform:uppercase">Credit</span>
+      </div>
+      ${lines}
+      <div style="display:flex;justify-content:flex-start;margin-top:6px" onclick="event.stopPropagation()">
+        <button class="btn btn-sm" style="font-size:9px" onclick="togglePending('${je.id}')">${pend?'✓ Clear':'⏳ Pending'}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+document.getElementById('je-filters').addEventListener('click',e=>{if(e.target.dataset.f){JE_FILTER=e.target.dataset.f;renderJE();}});
+function togglePending(id){const je=D.journalEntries.find(e=>e.id===id);if(!je)return;je.status=je.status==='pending'?'cleared':'pending';save();renderJE();renderBS();}
+function deleteJE(id){showDeleteWarning(id,()=>{D.journalEntries=D.journalEntries.filter(e=>e.id!==id);save();renderJE();renderBS();});}
+function deleteJEFromDrill(id,acctId){showDeleteWarning(id,()=>{D.journalEntries=D.journalEntries.filter(e=>e.id!==id);save();renderBS();openDrill(acctId);});}
+
+function showDeleteWarning(id,onDelete){
+  const je=D.journalEntries.find(e=>e.id===id);if(!je)return;
+  const lines=je.lines.filter(l=>l.dr>0||l.cr>0);
+  const affects=lines.map(l=>{const a=acctById(l.aid);return{name:a?a.name:l.aid,dr:l.dr,cr:l.cr};});
+  let html=`<div style="font-size:12px;color:var(--txt);margin-bottom:10px"><strong>${je.desc}</strong> — ${je.date}</div>`;
+  html+=`<div style="font-size:9px;color:var(--txt3);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px">Accounts affected</div>`;
+  html+=`<table style="width:100%;font-size:11px;border-collapse:collapse;margin-bottom:12px">`;
+  affects.forEach(r=>{
+    html+=`<tr><td style="padding:4px 0;color:var(--txt)">${r.name}</td>
+      <td style="text-align:right;color:var(--acc2);padding:4px 6px">${r.dr?'DR '+ff(r.dr):''}</td>
+      <td style="text-align:right;color:var(--txt3);padding:4px 0">${r.cr?'CR '+ff(r.cr):''}</td></tr>`;
+  });
+  html+=`</table>`;
+  html+=`<div style="font-size:10px;color:var(--amber);margin-bottom:14px;padding:8px 10px;background:rgba(255,170,0,.08);border:1px solid rgba(255,170,0,.2);border-radius:6px">
+    ⚠ Deleting this entry will change the balance of ${affects.length} account${affects.length!==1?'s':''}. Consider creating a <strong>reversing entry</strong> instead to preserve audit history.
+  </div>`;
+  document.getElementById('del-warn-body').innerHTML=html;
+  document.getElementById('m-del-warn').classList.remove('h');
+  document.getElementById('btn-del-confirm').onclick=()=>{document.getElementById('m-del-warn').classList.add('h');onDelete();};
+  document.getElementById('btn-del-reverse').onclick=()=>{
+    document.getElementById('m-del-warn').classList.add('h');
+    // Create reversing entry with all DR/CR flipped, dated today
+    const today=new Date().toISOString().split('T')[0];
+    const rev={id:'r-'+uid(),date:today,period:today.slice(0,7),
+      desc:'Reversal — '+je.desc,cat:je.cat,
+      lines:je.lines.map(l=>({aid:l.aid,dr:l.cr,cr:l.dr})),
+      tags:[...(je.tags||[]),'reversal'],status:'cleared'};
+    D.journalEntries.push(rev);
+    save();renderJE();renderBS();
+  };
+}
+
+let EDIT_JE_ID=null;
+function editJE(id){
+  const je=D.journalEntries.find(e=>e.id===id);if(!je)return;
+  EDIT_JE_ID=id;
+  document.getElementById('je-modal-title').textContent='Edit Journal Entry';
+  document.getElementById('m-je').classList.remove('h');
+  document.getElementById('je-dt').value=je.date;
+  document.getElementById('je-ds').value=je.desc;
+  document.getElementById('je-cat').value=je.cat;
+  document.getElementById('je-status').value=je.status||'cleared';
+  document.getElementById('je-bal-check').style.display='none';
+  document.getElementById('btn-del-je').style.display='';
+  document.getElementById('je-lines-builder').innerHTML='';
+  je.lines.forEach(l=>{
+    const c=document.getElementById('je-lines-builder'),d=document.createElement('div');d.className='jbl';
+    const opts=D.accounts.map(a=>`<option value="${a.id}"${a.id===l.aid?' selected':''}>${a.name}</option>`).join('');
+    d.innerHTML=`<select class="jal">${opts}</select><input type="number" class="jdr" placeholder="DR" step="0.01" value="${l.dr||''}"><input type="number" class="jcr" placeholder="CR" step="0.01" value="${l.cr||''}"><button class="btn btn-sm btn-d" onclick="this.parentNode.remove()" style="width:28px;padding:0">✕</button>`;
+    c.appendChild(d);
+  });
+}
+function deleteJEFromModal(){
+  const id=EDIT_JE_ID;if(!id)return;
+  document.getElementById('m-je').classList.add('h');
+  showDeleteWarning(id,()=>{D.journalEntries=D.journalEntries.filter(e=>e.id!==id);save();renderJE();renderBS();});
+}
+
+// JE Modal
+function openJE(){
+  EDIT_JE_ID=null;
+  document.getElementById('je-modal-title').textContent='New Journal Entry';
+  document.getElementById('m-je').classList.remove('h');
+  document.getElementById('je-dt').value=new Date().toISOString().split('T')[0];
+  document.getElementById('je-ds').value='';
+  document.getElementById('je-status').value='cleared';
+  document.getElementById('je-bal-check').style.display='none';
+  document.getElementById('btn-del-je').style.display='none';
+  document.getElementById('je-lines-builder').innerHTML='';
+  addJELine();addJELine();
+}
+function addJELine(){
+  const c=document.getElementById('je-lines-builder'),d=document.createElement('div');d.className='jbl';
+  const opts=D.accounts.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
+  d.innerHTML=`<select class="jal">${opts}</select><input type="number" class="jdr" placeholder="DR" step="0.01"><input type="number" class="jcr" placeholder="CR" step="0.01"><button class="btn btn-sm btn-d" onclick="this.parentNode.remove()" style="width:28px;padding:0">✕</button>`;
+  c.appendChild(d);
+}
+function saveJE(){
+  const date=document.getElementById('je-dt').value;
+  const desc=document.getElementById('je-ds').value.trim();
+  const cat=document.getElementById('je-cat').value;
+  const period=date.slice(0,7); // auto-derived from date — no manual input needed
+  const status=document.getElementById('je-status').value;
+  const lines=[];
+  document.querySelectorAll('#je-lines-builder .jbl').forEach(r=>{
+    const aid=r.querySelector('.jal').value;
+    const dr=parseFloat(r.querySelector('.jdr').value)||0;
+    const cr=parseFloat(r.querySelector('.jcr').value)||0;
+    if(dr>0||cr>0)lines.push({aid,dr,cr});
+  });
+  if(!lines.length){alert('Add at least one line');return;}
+  const tDr=lines.reduce((s,l)=>s+l.dr,0),tCr=lines.reduce((s,l)=>s+l.cr,0);
+  if(Math.abs(tDr-tCr)>0.01){
+    const el=document.getElementById('je-bal-check');el.style.display='block';el.className='alert-e';
+    el.textContent=`Does not balance. DR: ${ff(tDr)}  CR: ${ff(tCr)}  Diff: ${ff(tDr-tCr)}`;return;
+  }
+  if(EDIT_JE_ID){
+    const idx=D.journalEntries.findIndex(e=>e.id===EDIT_JE_ID);
+    if(idx>=0)D.journalEntries[idx]={...D.journalEntries[idx],date,period,desc,cat,lines,status};
+  }else{
+    D.journalEntries.push({id:uid(),date,period,desc,cat,lines,tags:[],status});
+  }
+  save();EDIT_JE_ID=null;
+  document.getElementById('m-je').classList.add('h');
+  renderJE();renderBS();
+}
+document.getElementById('btn-new-je').addEventListener('click',openJE);
+document.getElementById('btn-addl').addEventListener('click',addJELine);
+document.getElementById('btn-cxl-je').addEventListener('click',()=>{EDIT_JE_ID=null;document.getElementById('m-je').classList.add('h');});
+document.getElementById('btn-sv-je').addEventListener('click',saveJE);
+
+// ─── INVESTMENTS ──────────────────────────────────────────────
+async function fetchPrices(){
+  const st=document.getElementById('price-status');
+  st.textContent='fetching…';st.style.color='var(--amber)';
+  const syms=[...(D.tickers||[]).map(t=>t.sym)];
+  if(!syms.length){st.textContent='no tickers';st.style.color='var(--txt3)';return;}
+  let ok=0,fail=0;
+  try{
+    if(WORKER_URL){
+      const r=await fetch(`${WORKER_URL}?symbols=${syms.join(',')}`);
+      if(r.ok){
+        const d=await r.json();
+        // Handle multiple response shapes: {VOO:540},{prices:{VOO:540}},[{symbol,price}]
+        const flat=d?.prices||d?.data||d;
+        if(Array.isArray(flat)){
+          flat.forEach(item=>{const sym=item.symbol||item.ticker||item.sym;const v=parseFloat(item.price||item.value||item.last);if(sym&&!isNaN(v)){LIVE_PRICES[sym]=v;ok++;}});
+        }else if(typeof flat==='object'){
+          Object.entries(flat).forEach(([sym,val])=>{const v=parseFloat(typeof val==='object'?val?.price||val?.last||val?.value:val);if(!isNaN(v)){LIVE_PRICES[sym]=v;ok++;}});
+        }
+        fail=syms.length-ok;
+        if(ok===0&&fail>0){
+          // Log raw response to help debug
+          console.warn('Worker returned 0 prices. Raw response:',JSON.stringify(d).slice(0,200));
+          st.textContent=`Worker connected but 0 prices parsed. Check console.`;
+          st.style.color='var(--amber)';return;
+        }
+      }else{
+        st.textContent=`Worker error: HTTP ${r.status}`;st.style.color='var(--red)';return;
+      }
+    }else{
+      // Fallback: Yahoo Finance
+      for(const tk of (D.tickers||[]).filter(t=>!t.sym.includes('-'))){
+        try{const r=await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${tk.sym}?interval=1d&range=1d`);const d=await r.json();const p=d?.chart?.result?.[0]?.meta?.regularMarketPrice;if(p){LIVE_PRICES[tk.sym]=+p.toFixed(4);ok++;}else fail++;}catch{fail++;}
+      }
+      for(const tk of (D.tickers||[]).filter(t=>t.sym.includes('-USD'))){
+        try{const coin=tk.sym.replace('-USD','');const r=await fetch(`https://api.coinbase.com/v2/prices/${coin}-USD/spot`);const d=await r.json();const p=d?.data?.amount;if(p){LIVE_PRICES[tk.sym]=+parseFloat(p).toFixed(4);ok++;}else fail++;}catch{fail++;}
+      }
+    }
+  }catch(e){st.textContent='Fetch error: '+e.message;st.style.color='var(--red)';return;}
+  const t=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  st.textContent=fail===0?`✓ ${ok} prices ${t}`:`${ok}/${syms.length} ok ${t}`;
+  st.style.color=fail===0?'var(--green)':'var(--amber)';
+  renderInv();renderBS();
+}
+
+function renderInv(){
+  document.querySelectorAll('#inv-tabs .pill').forEach(p=>p.classList.toggle('active',p.dataset.t===INV_TAB));
+  const aoci=calcAOCI();
+  const bar=document.getElementById('inv-aoci-bar');
+  if(Math.abs(aoci)>0.01){bar.style.display='block';bar.innerHTML=`AOCI: <strong>${aoci>=0?'+':''}$${ff(aoci)}</strong> unrealized G/L — flows to equity on balance sheet`;}
+  else bar.style.display='none';
+  if(INV_TAB==='positions')renderPositions();
+  else if(INV_TAB==='tickers')renderTickersTab();
+  else if(INV_TAB==='disclosure')renderDisclosure();
+}
+document.getElementById('inv-tabs').addEventListener('click',e=>{if(e.target.dataset.t){INV_TAB=e.target.dataset.t;renderInv();}});
+
+function acctLabel(acct){
+  const m={'vanguard':'Vanguard Roth IRA','schwab':'Charles Schwab','bny-espp':'BNY ESPP','coinbase':'Coinbase','401k':'BNY 401(k)','other':'Other'};
+  return m[acct]||acct;
+}
+
+// ─── INVESTMENT CASH TRACKING ────────────────────────────────
+function saveInvCash(key){
+  if(!D.investmentCash)D.investmentCash={};
+  const inp=document.getElementById('icash-'+key);if(!inp)return;
+  D.investmentCash[key]=parseFloat(inp.value)||0;
+  save();renderBS();
+  const st=document.getElementById('icash-st-'+key);
+  if(st){st.textContent='✓';st.style.color='var(--green)';setTimeout(()=>{st.textContent='';},1500);}
+}
+
+function renderPositions(){
+  const el=document.getElementById('inv-body');
+  const ic=D.investmentCash||{};
+
+  // ── Cash in Investment Accounts panel ─────────────────────
+  const cashDefs=[
+    {key:'schwab',label:'Charles Schwab'},
+    {key:'vanguard',label:'Vanguard Roth IRA'},
+    {key:'bny-espp',label:'BNY'},
+  ];
+  let cashH=`<div class="inv-card" style="margin-bottom:12px">
+    <div class="fb" style="margin-bottom:10px">
+      <span class="inv-acct-hd">Cash in Investment Accounts</span>
+      <span style="font-size:8.5px;color:var(--txt3)">Shows on balance sheet in amber</span>
+    </div>`;
+  cashDefs.forEach(ck=>{
+    cashH+=`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bdr)">
+      <span style="flex:1;font-size:12px;color:var(--txt)">${ck.label}</span>
+      <input type="number" id="icash-${ck.key}" value="${ic[ck.key]||0}" step="0.01"
+        style="width:110px;text-align:right;font-size:12px;padding:5px 8px"
+        onkeydown="if(event.key==='Enter')saveInvCash('${ck.key}')">
+      <button class="btn btn-sm btn-p" style="font-size:9px;min-width:44px" onclick="saveInvCash('${ck.key}')">Save</button>
+      <span id="icash-st-${ck.key}" style="font-size:9px;min-width:10px"></span>
+    </div>`;
+  });
+  cashH+=`<div style="font-size:8px;color:var(--txt3);margin-top:8px">Investments are recorded at cost basis which may include cash. Track cash separately here.</div></div>`;
+
+  const byAcct={};
+  (D.positions||[]).forEach(p=>{if(!byAcct[p.acct])byAcct[p.acct]=[];byAcct[p.acct].push(p);});
+  (D.manualPositions||[]).forEach(m=>{if(!byAcct[m.acct])byAcct[m.acct]=[];});
+  const today=new Date().toISOString().slice(0,10);
+
+  // Dynamic BS balance for each investment account — NOT hardcoded
+  function invBSBal(acct){
+    const map={'vanguard':'vanguard','bny-espp':'bny-espp','schwab':'schwab','coinbase':'coinbase'};
+    if(acct==='401k')return calcBalAt('bny401k-pt',today)+calcBalAt('bny401k-cm',today);
+    const id=map[acct];return id?calcBalAt(id,today):null;
+  }
+
+  let h='';
+  Object.entries(byAcct).forEach(([acct,poses])=>{
+    const manuals=(D.manualPositions||[]).filter(m=>m.acct===acct);
+    const lotCost=poses.reduce((s,p)=>s+posCost(p),0);
+    const bsBal=invBSBal(acct);
+    // Section total: use live BS balance if available, else lot costs
+    const displayCost=bsBal!=null?bsBal:(lotCost+manuals.reduce((s,m)=>s+m.value,0));
+    const tFV=poses.reduce((s,p)=>s+posShares(p)*posLivePrice(p),0)+(bsBal!=null?bsBal-lotCost:manuals.reduce((s,m)=>s+m.value,0));
+    const unr=Math.round((tFV-displayCost)*100)/100;
+    h+=`<div class="inv-card">
+      <div class="fb" style="margin-bottom:10px">
+        <span class="inv-acct-hd">${acctLabel(acct)}</span>
+        <div style="text-align:right">
+          <div style="font-size:12px;color:var(--txt)">$${ff(displayCost)} cost${bsBal!=null?'<span style="font-size:8px;color:var(--txt3);margin-left:4px">(live from BS)</span>':''}</div>
+          ${tFV>0&&Math.abs(unr)>0.01?`<div style="font-size:9px" class="${unr>=0?'pos':'neg'}">${unr>=0?'+':''}$${ff(unr)} AOCI</div>`:''}
+        </div>
+      </div>`;
+    poses.forEach(pos=>{
+      const tk=tkById(pos.tkId);if(!tk)return;
+      const sh=posShares(pos),cost=posCost(pos),lp=posLivePrice(pos);
+      const fv=sh*lp,unr=Math.round((fv-cost)*100)/100,pct=cost>0?(unr/cost*100):0;
+      const live=LIVE_PRICES[tk.sym]!=null;
+      h+=`<div class="inv-row">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:2px">
+            <span class="inv-sym">${tk.sym}</span>
+            <span class="${live?'live-dot-y':'live-dot-n'}">●${live?'live':'stale'}</span>
+            ${lp>0?`<span style="font-size:10px;color:var(--txt)">$${ff(lp,4)}</span>`:''}
+            ${pos.lots&&pos.lots.length>1?`<span style="font-size:8px;color:var(--acc2);border:1px solid var(--bdr2);border-radius:3px;padding:1px 4px">${pos.lots.length} lots</span>`:''}
+          </div>
+          <div style="font-size:9px;color:var(--txt3)">${tk.nm}</div>
+          ${sh>0?`<div style="font-size:9px;color:var(--txt3)">${ff(sh,4)} sh · avg $${ff(sh>0?cost/sh:0,4)}/sh</div>
+            <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">
+              ${(pos.lots||[]).map((l,li)=>`<span style="font-size:8px;padding:2px 6px;background:var(--surf2);border-radius:3px;color:var(--txt3);display:inline-flex;align-items:center;gap:4px">${l.date||'—'} ${ff(l.sh,4)}sh@$${ff(l.pp,4)}=$${ff(l.cost)}<button onclick="deleteLot('${pos.id}',${li})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:10px;padding:0;line-height:1">×</button></span>`).join('')}
+            </div>`:
+          ''}
+          ${pos.nt?`<div style="font-size:8.5px;color:var(--txt3);margin-top:2px">${pos.nt}</div>`:''}
+        </div>
+        <div class="inv-nr">
+          <div style="font-size:13px;font-weight:600">$${ff(cost)}</div>
+          <div style="font-size:8px;color:var(--txt3)">cost basis</div>
+          ${sh>0&&lp>0?`
+            <div style="margin-top:6px;padding:5px 8px;border-radius:6px;background:${unr>=0?'rgba(61,222,122,.1)':'rgba(255,92,106,.1)'};border:1px solid ${unr>=0?'rgba(61,222,122,.25)':'rgba(255,92,106,.25)'}">
+              <div style="font-size:13px;font-weight:700" class="${unr>=0?'pos':'neg'}">${unr>=0?'+':''}$${ff(unr)}</div>
+              <div style="font-size:9px" class="${unr>=0?'pos':'neg'}">${pct>=0?'+':''}${pct.toFixed(1)}%</div>
+            </div>
+            <div style="font-size:8px;color:var(--txt3);margin-top:3px;text-align:right">FMV $${ff(fv)}</div>`
+          :sh>0?`<div style="font-size:8px;color:var(--txt3);margin-top:4px">no live price</div>`:''}
+          <button class="btn btn-sm" style="font-size:8px;margin-top:5px" onclick="openAddLot('${pos.id}')">+ Lot</button>
+        </div>
+      </div>`;
+    });
+    manuals.forEach(m=>{
+      // Dynamic value: BS balance minus tracked lot costs — never hardcoded
+      const dynamicVal=bsBal!=null?Math.max(0,Math.round((bsBal-lotCost)*100)/100):m.value;
+      h+=`<div class="inv-row">
+        <div style="flex:1"><div style="font-size:13px;color:var(--txt)">${m.nm}</div>
+          <div style="font-size:9px;color:var(--txt3)">${m.note||''}</div>
+          <div style="font-size:8px;color:var(--txt3);margin-top:1px">Reflects balance sheet balance${lotCost>0?' minus tracked lots':''}</div>
+        </div>
+        <div class="inv-nr"><div style="font-size:13px;font-weight:600">$${ff(dynamicVal)}</div>
+          <div style="font-size:8px;color:var(--txt3)">from BS</div>
+        </div>
+      </div>`;
+    });
+    h+='</div>';
+  });
+  if(!h)h='';
+  el.innerHTML=cashH+h+(h?'':'<div class="empty" style="margin-top:8px">No positions yet — tap + Lot to add one</div>');
+}
+
+function deleteLot(posId,lotIdx){
+  if(!confirm('Delete this lot?'))return;
+  const pos=(D.positions||[]).find(p=>p.id===posId);
+  if(!pos||!pos.lots)return;
+  pos.lots.splice(lotIdx,1);
+  save();renderInv();renderBS();
+}
+
+function renderDisclosure(){
+  // 10-Q style: cost vs FMV table per account
+  const el=document.getElementById('inv-body');
+  const byAcct={};
+  (D.positions||[]).forEach(p=>{if(!byAcct[p.acct])byAcct[p.acct]=[];byAcct[p.acct].push(p);});
+  let h='<div style="font-size:8.5px;color:var(--txt3);margin-bottom:10px">Investment securities — cost basis vs. estimated fair value</div>';
+  let grandCost=0,grandFV=0;
+  Object.entries(byAcct).forEach(([acct,poses])=>{
+    const rows=poses.map(pos=>{
+      const tk=tkById(pos.tkId);if(!tk)return null;
+      const sh=posShares(pos),cost=posCost(pos),lp=posLivePrice(pos),fv=sh*lp;
+      const unr=Math.round((fv-cost)*100)/100;
+      grandCost+=cost;if(fv>0)grandFV+=fv;
+      return`<tr>
+        <td>${tk.sym}<div style="font-size:8px;color:var(--txt3)">${tk.nm}</div></td>
+        <td>${ff(sh>0?sh:null,4)}</td>
+        <td>${cost>0?'$'+ff(cost):'—'}</td>
+        <td>${lp>0?'$'+ff(lp,4):'<span style="color:var(--txt3)">—</span>'}</td>
+        <td>${fv>0?'$'+ff(fv):'—'}</td>
+        <td class="${unr>=0?'pos':'neg'}">${fv>0&&cost>0?(unr>=0?'+':'')+'$'+ff(unr):'—'}</td>
+      </tr>`;
+    }).filter(Boolean).join('');
+    if(!rows)return;
+    h+=`<div class="card" style="margin-bottom:10px">
+      <div class="inv-acct-hd" style="margin-bottom:8px">${acctLabel(acct)}</div>
+      <div class="tw"><table class="dt">
+        <thead><tr><th style="text-align:left">Security</th><th>Shares</th><th>Cost Basis</th><th>Price</th><th>Fair Value</th><th>Unrealized G/L</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div>
+    </div>`;
+  });
+  if(grandCost>0){
+    h+=`<div class="bsl gtot" style="margin-top:4px"><span class="bla">Total portfolio</span><span class="bam">$${ff(grandCost)} cost</span>${grandFV>0?`<span class="bam ${grandFV>=grandCost?'pos':'neg'}">$${ff(grandFV)} FMV</span>`:''}</div>`;
+  }
+  if(!Object.keys(byAcct).length)h='<div class="empty">No positions with lots yet</div>';
+  el.innerHTML=h;
+}
+
+function renderAOCI_tab(){
+  const el=document.getElementById('inv-body');
+  const all=D.positions||[];
+  let tot=0;
+  let rows='';
+  all.forEach(pos=>{
+    const tk=tkById(pos.tkId);if(!tk)return;
+    const sh=posShares(pos),cost=posCost(pos),lp=posLivePrice(pos);
+    if(!sh)return;
+    const fv=sh*lp,unr=Math.round((fv-cost)*100)/100;
+    tot+=unr;
+    rows+=`<div class="isl"><span class="il"><strong>${tk.sym}</strong> <span style="font-size:9px;color:var(--txt3)">${tk.nm}</span></span>
+      <span class="ia"><span class="${unr>=0?'pos':'neg'}">${unr>=0?'+':''}$${ff(unr)}</span> <span style="font-size:9px;color:var(--txt3)">(cost $${ff(cost)})</span></span></div>`;
+  });
+  el.innerHTML=`<div class="card">
+    ${rows||'<div style="padding:12px 0;font-size:11px;color:var(--txt3)">No positions with live prices yet</div>'}
+    <div class="isl tot"><span class="il">Total AOCI</span><span class="ia ${tot>=0?'pos':'neg'}">${tot>=0?'+':''}$${ff(tot)}</span></div>
+    <div style="font-size:8.5px;color:var(--txt3);margin-top:8px;line-height:1.6">Unrealized G/L flows to the equity section of the balance sheet as AOCI. Requires live prices — hit ⟳ Prices.</div>
+  </div>`;
+}
+
+// ─── LOT ENTRY (FLEXIBLE) ─────────────────────────────────────
+let lotUserEdited={sh:false,pp:false,tot:false};
+let EDIT_LOT_POS=null;
+
+function openAddLot(posId){
+  EDIT_LOT_POS=posId;
+  const sel=document.getElementById('lot-pos');
+  const allPos=D.positions||[];
+  sel.innerHTML='<option value="">— select position —</option>'+
+    allPos.map(p=>{const tk=tkById(p.tkId);return`<option value="${p.id}"${p.id===posId?' selected':''}>${tk?tk.sym:'?'} — ${acctLabel(p.acct)}</option>`;}).join('');
+  if(posId){sel.value=posId;const pos=allPos.find(p=>p.id===posId);const tk=pos?tkById(pos.tkId):null;document.getElementById('lot-title').textContent='Add Lot'+(tk?' — '+tk.sym:'');}
+  else document.getElementById('lot-title').textContent='Add Lot';
+  ['lot-sh','lot-pp','lot-tot','lot-note'].forEach(id=>document.getElementById(id).value='');
+  ['lot-sh','lot-pp','lot-tot'].forEach(id=>document.getElementById(id).className='');
+  ['lot-sh-flag','lot-pp-flag','lot-tot-flag'].forEach(id=>document.getElementById(id).textContent='');
+  lotUserEdited={sh:false,pp:false,tot:false};
+  document.getElementById('lot-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('lot-summary').style.display='none';
+  document.getElementById('m-lot').classList.remove('h');
+}
+
+function computeLot(changed){
+  lotUserEdited[changed]=true;
+  const sh_raw=document.getElementById('lot-sh').value;
+  const pp_raw=document.getElementById('lot-pp').value;
+  const tot_raw=document.getElementById('lot-tot').value;
+  const sh=parseFloat(sh_raw)||0;
+  const pp=parseFloat(pp_raw)||0;
+  const tot=parseFloat(tot_raw)||0;
+  const has={sh:sh>0||sh_raw!=='',pp:pp>0||pp_raw!=='',tot:tot>0||tot_raw!==''};
+  const editedCount=Object.values(lotUserEdited).filter(Boolean).length;
+
+  // Clear flags
+  ['sh','pp','tot'].forEach(f=>{
+    document.getElementById('lot-'+f+'-flag').textContent='';
+    if(!lotUserEdited[f])document.getElementById('lot-'+f).classList.add('computed-field');
+    else document.getElementById('lot-'+f).classList.remove('computed-field');
+  });
+
+  if(editedCount<2)return;
+
+  // Determine which field to compute: the one NOT user-edited (if 2 edited), or use priority (tot wins if all 3)
+  if(lotUserEdited.sh&&lotUserEdited.pp&&!lotUserEdited.tot){
+    if(sh>0&&pp>0){document.getElementById('lot-tot').value=(sh*pp).toFixed(2);document.getElementById('lot-tot-flag').textContent='auto-calc';}
+  }else if(lotUserEdited.sh&&lotUserEdited.tot&&!lotUserEdited.pp){
+    if(sh>0&&tot>0){document.getElementById('lot-pp').value=(tot/sh).toFixed(4);document.getElementById('lot-pp-flag').textContent='auto-calc';}
+  }else if(lotUserEdited.pp&&lotUserEdited.tot&&!lotUserEdited.sh){
+    if(pp>0&&tot>0){document.getElementById('lot-sh').value=(tot/pp).toFixed(4);document.getElementById('lot-sh-flag').textContent='auto-calc';}
+  }else if(lotUserEdited.sh&&lotUserEdited.pp&&lotUserEdited.tot){
+    // All three entered — total is authoritative; recalculate shares from total / pp
+    if(pp>0&&tot>0){
+      const newSh=(tot/pp).toFixed(4);
+      document.getElementById('lot-sh').value=newSh;
+      document.getElementById('lot-sh-flag').textContent='recalc from total÷price';
+      document.getElementById('lot-sh').classList.add('computed-field');
+    }
+  }
+
+  // Show summary
+  const shV=parseFloat(document.getElementById('lot-sh').value)||0;
+  const ppV=parseFloat(document.getElementById('lot-pp').value)||0;
+  const totV=parseFloat(document.getElementById('lot-tot').value)||0;
+  if(shV>0&&totV>0){
+    const s=document.getElementById('lot-summary');
+    s.style.display='block';
+    s.innerHTML=`<strong>${ff(shV,4)} shares</strong> at $${ff(ppV>0?ppV:totV/shV,4)}/sh = <strong>$${ff(totV)} total cost</strong>`;
+  }
+}
+
+function saveLot(){
+  const posId=document.getElementById('lot-pos').value;
+  if(!posId){alert('Select a position');return;}
+  const shV=parseFloat(document.getElementById('lot-sh').value)||0;
+  const ppV=parseFloat(document.getElementById('lot-pp').value)||0;
+  const totV=parseFloat(document.getElementById('lot-tot').value)||0;
+  const date=document.getElementById('lot-date').value;
+  const note=document.getElementById('lot-note').value.trim();
+  // Need at least total and shares (or total and price/share)
+  if(totV<=0){alert('Total cost is required');return;}
+  if(shV<=0&&ppV<=0){alert('Enter shares or price/share');return;}
+  const finalSh=shV>0?shV:(ppV>0?totV/ppV:0);
+  const finalPp=ppV>0?ppV:(shV>0?totV/shV:0);
+  if(finalSh<=0){alert('Could not determine share count');return;}
+  const pos=(D.positions||[]).find(p=>p.id===posId);
+  if(!pos){alert('Position not found');return;}
+  if(!pos.lots)pos.lots=[];
+  pos.lots.push({id:'lot-'+uid(),sh:Math.round(finalSh*10000)/10000,pp:Math.round(finalPp*10000)/10000,cost:Math.round(totV*100)/100,date,note});
+  save();
+  document.getElementById('m-lot').classList.add('h');
+  renderInv();renderBS();
+}
+document.getElementById('btn-cxl-lot').addEventListener('click',()=>document.getElementById('m-lot').classList.add('h'));
+document.getElementById('btn-sv-lot').addEventListener('click',saveLot);
+
+// ─── WORKER SETTINGS ─────────────────────────────────────────
+function openWorkerSettings(){
+  document.getElementById('worker-url').value=WORKER_URL;
+  document.getElementById('worker-test-result').textContent='';
+  document.getElementById('m-worker').classList.remove('h');
+}
+async function testWorker(){
+  const url=document.getElementById('worker-url').value.trim();
+  const el=document.getElementById('worker-test-result');
+  if(!url){el.textContent='Enter a URL first';el.style.color='var(--red)';return;}
+  el.textContent='Testing…';el.style.color='var(--amber)';
+  try{
+    const r=await fetch(`${url}?symbols=VOO`);
+    if(r.ok){const d=await r.json();el.textContent='✓ Connected — sample: '+JSON.stringify(d).slice(0,60);el.style.color='var(--green)';}
+    else{el.textContent='HTTP '+r.status+' — check worker config';el.style.color='var(--red)';}
+  }catch(e){el.textContent='Error: '+e.message;el.style.color='var(--red)';}
+}
+document.getElementById('btn-cxl-worker').addEventListener('click',()=>document.getElementById('m-worker').classList.add('h'));
+document.getElementById('btn-sv-worker').addEventListener('click',()=>{
+  WORKER_URL=document.getElementById('worker-url').value.trim();
+  localStorage.setItem('ns_worker_url',WORKER_URL);
+  document.getElementById('m-worker').classList.add('h');
+});
+
+function editManual(id){
+  const m=(D.manualPositions||[]).find(x=>x.id===id);if(!m)return;
+  const v=prompt(`Update value for "${m.nm}":`,m.value);
+  if(v===null)return;
+  const n=parseFloat(v);if(isNaN(n))return;
+  m.value=n;save();renderInv();renderBS();
+}
+
+// ─── AUTO LOAN ────────────────────────────────────────────────
+function calcALPrev(){
+  const al=D.autoLoan,tp=document.getElementById('al-tp').value,ds=document.getElementById('al-dt').value;
+  if(!ds)return null;
+  const last=al.payments[al.payments.length-1];
+  const days=Math.round((new Date(ds)-new Date(last.date))/86400000);
+  const interest=tp==='principal'?0:+(last.balance*(al.apr/365)*days).toFixed(2);
+  const amt=parseFloat(document.getElementById('al-amt').value)||al.monthlyPay;
+  const principal=tp==='principal'?amt:+(amt-interest).toFixed(2);
+  const nb=+(last.balance-(tp==='principal'?amt:principal)).toFixed(2);
+  document.getElementById('al-prev').innerHTML=`Days: ${days} · Interest: <span class="neg">$${ff(interest)}</span> · Principal: <span class="pos">$${ff(principal)}</span> · New bal: $${ff(nb)}`;
+  return{days,interest,principal,nb,amt,tp,ds};
+}
+function renderAL(){
+  const al=D.autoLoan,last=al.payments[al.payments.length-1];
+  const totInt=al.payments.filter(p=>p.type!=='open').reduce((s,p)=>s+p.interest,0);
+  const pct=(al.origPrin-last.balance)/al.origPrin*100;
+  document.getElementById('al-kv').innerHTML=[
+    {l:'Original Principal',v:'$'+ff(al.origPrin)},{l:'Current Balance',v:'$'+ff(last.balance)},
+    {l:'APR',v:(al.apr*100).toFixed(2)+'%'},{l:'Monthly Payment',v:'$'+ff(al.monthlyPay)},
+    {l:'Contract Date',v:al.contractDate},{l:'Interest Paid YTD',v:'$'+ff(totInt)},
+  ].map(k=>`<div class="kv"><div class="kl">${k.l}</div><div class="kv2">${k.v}</div></div>`).join('');
+  document.getElementById('al-body').innerHTML=al.payments.map(p=>
+    p.type==='open'?`<tr><td>${p.date}</td><td>—</td><td>—</td><td>—</td><td>—</td><td>$${ff(p.balance)}</td></tr>`:
+    `<tr><td>${p.date}</td><td>$${ff(p.payment)}</td><td>${p.days}</td><td class="neg">$${ff(p.interest)}</td><td class="pos">$${ff(p.principal)}</td><td>$${ff(p.balance)}</td></tr>`
+  ).join('');
+  document.getElementById('al-prog').style.width=pct.toFixed(1)+'%';
+  document.getElementById('al-prog-lbl').textContent=`${pct.toFixed(1)}% paid off`;
+}
+document.getElementById('btn-al-pay').addEventListener('click',()=>{
+  document.getElementById('m-al').classList.remove('h');
+  document.getElementById('al-dt').value=new Date().toISOString().split('T')[0];
+  document.getElementById('al-amt').value=D.autoLoan.monthlyPay;
+  calcALPrev();
+});
+['al-dt','al-amt','al-tp'].forEach(id=>document.getElementById(id).addEventListener('input',calcALPrev));
+document.getElementById('btn-cxl-al').addEventListener('click',()=>document.getElementById('m-al').classList.add('h'));
+document.getElementById('btn-sv-al').addEventListener('click',()=>{
+  const r=calcALPrev();if(!r)return;
+  D.autoLoan.payments.push({date:r.ds,payment:r.amt,days:r.days,interest:r.interest,principal:r.principal,balance:r.nb,type:r.tp});
+  D.balances['auto-loan'].c=r.nb;
+  save();document.getElementById('m-al').classList.add('h');renderAL();renderBS();
+});
+
+// ─── DEPRECIATION ─────────────────────────────────────────────
+function renderDep(){
+  const dep=D.autoDep||{purchasePrice:32263.86,usefulLifeMonths:60,startDate:'2025-12-26'};
+  const monthly=+(dep.purchasePrice/dep.usefulLifeMonths).toFixed(3);
+  const today=new Date().toISOString().slice(0,10);
+  const accumNow=calcAccumDepAt(today);
+  const moNow=Math.round(Math.abs(accumNow)/monthly); // how many months recognized so far
+
+  document.getElementById('dep-kv').innerHTML=[
+    {l:'Purchase Price',v:'$'+ff(dep.purchasePrice)},
+    {l:'Useful Life',v:dep.usefulLifeMonths+' months'},
+    {l:'Start Date',v:dep.startDate},
+    {l:'Monthly Dep.',v:'$'+ff(monthly)},
+    {l:'Months Recognized',v:moNow},
+    {l:'Accum. Dep. (Today)',v:'($'+ff(Math.abs(accumNow))+')'},
+  ].map(k=>`<div class="kv"><div class="kl">${k.l}</div><div class="kv2">${k.v}</div></div>`).join('');
+
+  // Build schedule: month 1 = January 2026 (first full month after purchase)
+  const depStart=new Date(dep.startDate+'T12:00:00');
+  const firstPeriod=new Date(depStart.getFullYear(),depStart.getMonth()+1,1); // Jan 1, 2026
+  let rows='',acc=0;
+  for(let m=1;m<=dep.usefulLifeMonths;m++){
+    // End of period m is the last day of (firstPeriod month + m-1)
+    const periodEnd=new Date(firstPeriod.getFullYear(),firstPeriod.getMonth()+m,0);
+    acc+=monthly;
+    const nbv=Math.max(0,dep.purchasePrice-acc);
+    const isCur=m===moNow;
+    const isPast=m<moNow;
+    rows+=`<tr style="${isCur?'background:rgba(24,200,255,.1)':''}${isPast?';opacity:.5':''}">
+      <td>Month ${m}</td>
+      <td>${periodEnd.toLocaleDateString('en-US',{month:'short',year:'numeric'})}</td>
+      <td class="neg">(${ff(monthly)})</td>
+      <td class="neg">(${ff(acc)})</td>
+      <td>$${ff(nbv)}</td>
+    </tr>`;
+  }
+  document.getElementById('dep-body').innerHTML=rows;
+}
+
+// ─── MOM LOAN ─────────────────────────────────────────────────
+function buildSched(){
+  const ml=D.momLoan,rate=ml.rate/12;let b=ml.principal;const s=[];
+  for(let m=1;m<=ml.termMonths;m++){const int=+(b*rate).toFixed(2),pay=ml.monthlyPay,prin=+(pay-int).toFixed(2),end=+(b-prin).toFixed(2);s.push({m,beg:b,pay,int,prin,end});b=end;if(b<=0)break;}
+  return s;
+}
+function renderML(){
+  const ml=D.momLoan,sched=buildSched();
+  const curM=ml.paidMonths.length?Math.max(...ml.paidMonths):0;
+  const curBal=curM>0?(sched[curM-1]?.end||ml.principal):ml.principal;
+  const cumInt=sched.slice(0,curM).reduce((s,r)=>s+r.int,0);
+  document.getElementById('ml-kv').innerHTML=[
+    {l:'Original Principal',v:'$'+ff(ml.principal)},{l:'Current Balance',v:'$'+ff(curBal)},
+    {l:'Annual Rate',v:(ml.rate*100).toFixed(2)+'%'},{l:'Monthly Payment',v:'$'+ff(ml.monthlyPay)},
+    {l:'Min. Interest',v:'$'+ff(ml.minInterest)},{l:'Cumulative Interest',v:'$'+ff(cumInt)},
+  ].map(k=>`<div class="kv"><div class="kl">${k.l}</div><div class="kv2">${k.v}</div></div>`).join('');
+  document.getElementById('ml-body').innerHTML=sched.map(r=>{
+    const paid=ml.paidMonths.includes(r.m),next=r.m===curM+1;
+    return`<tr style="${paid?'opacity:.4;text-decoration:line-through':''}"${next?' style="background:rgba(24,200,255,.1)"':''}">
+      <td>Month ${r.m}</td><td>$${ff(r.pay)}</td><td class="neg">$${ff(r.int)}</td><td class="pos">$${ff(r.prin)}</td><td>$${ff(r.beg)}</td><td>$${ff(r.end)}</td>
+      <td>${paid?'<span class="badge b-inc">paid</span>':(next?'<span class="badge b-trn">next</span>':'')}</td></tr>`;
+  }).join('');
+  D.balances['notes-pay'].c=curBal;
+}
+document.getElementById('btn-ml-pay').addEventListener('click',()=>{
+  document.getElementById('m-ml').classList.remove('h');
+  const nextM=(D.momLoan.paidMonths.length?Math.max(...D.momLoan.paidMonths):0)+1;
+  document.getElementById('ml-mn').value=nextM;
+  document.getElementById('ml-dt').value=new Date().toISOString().split('T')[0];
+  document.getElementById('ml-amt-row').style.display='none';
+  const s=buildSched(),r=s[nextM-1];
+  if(r)document.getElementById('ml-prev').innerHTML=`Month ${nextM}: Interest: <span class="neg">$${ff(r.int)}</span> · Principal: <span class="pos">$${ff(r.prin)}</span> · End bal: $${ff(r.end)}`;
+});
+['ml-mn','ml-amt'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{
+  const m=parseInt(document.getElementById('ml-mn').value)||1,tp=document.getElementById('ml-tp').value;
+  const s=buildSched(),r=s[m-1];if(!r)return;
+  if(tp==='regular')document.getElementById('ml-prev').innerHTML=`Month ${m}: Interest: <span class="neg">$${ff(r.int)}</span> · Principal: <span class="pos">$${ff(r.prin)}</span> · End bal: $${ff(r.end)}`;
+  else{const a=parseFloat(document.getElementById('ml-amt').value)||0;document.getElementById('ml-prev').innerHTML=`Principal $${ff(a)}`;}
+}));
+document.getElementById('ml-tp').addEventListener('change',()=>{document.getElementById('ml-amt-row').style.display=document.getElementById('ml-tp').value==='principal'?'block':'none';});
+document.getElementById('btn-cxl-ml').addEventListener('click',()=>document.getElementById('m-ml').classList.add('h'));
+document.getElementById('btn-sv-ml').addEventListener('click',()=>{
+  const m=parseInt(document.getElementById('ml-mn').value);
+  const tp=document.getElementById('ml-tp').value;
+  const debitAcct=document.getElementById('ml-acct').value||'boa';
+  const payDate=document.getElementById('ml-dt').value||new Date().toISOString().split('T')[0];
+  const period=payDate.slice(0,7);
+  const s=buildSched(),r=s[m-1];if(!r){alert('Invalid month');return;}
+  const int=r.int,prin=tp==='principal'?(parseFloat(document.getElementById('ml-amt').value)||0):r.prin;
+  const total=Math.round((prin+int)*100)/100;
+  const lines=[{aid:'notes-pay',dr:prin,cr:0},{aid:'interest-exp',dr:int,cr:0},{aid:debitAcct,dr:0,cr:total}];
+  D.journalEntries.push({id:uid(),date:payDate,period,desc:`Mom Loan — Month ${m}`,cat:'transfer',lines,tags:['notes-pay'],status:'cleared'});
+  if(!D.momLoan.paidMonths.includes(m))D.momLoan.paidMonths.push(m);
+  D.momLoan.paidMonths.sort((a,b)=>a-b);
+  if(!D.momLoan.paymentDates)D.momLoan.paymentDates={};
+  D.momLoan.paymentDates[m]=payDate;
+  save();document.getElementById('m-ml').classList.add('h');renderML();renderBS();renderJE();
+});
+
+// ─── FOOTNOTES ────────────────────────────────────────────────
+function renderFN(){
+  const el=document.getElementById('fn-list');
+  if(!D.footnotes.length){el.innerHTML='<div class="empty">No footnotes</div>';return;}
+  el.innerHTML=D.footnotes.map(fn=>{
+    const acctNames=(fn.accounts||[]).map(id=>{const a=acctById(id);return a?a.name:id;}).join(', ');
+    return`<div class="card" style="margin-bottom:8px;cursor:pointer;transition:opacity .15s" onclick="openEditFn('${fn.id}')" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">
+      <div class="fb" style="margin-bottom:4px">
+        <span style="color:var(--acc);font-size:14px;font-weight:700">${fn.ref}</span>
+        ${acctNames?`<span style="font-size:9px;color:var(--txt3)">${acctNames}</span>`:''}
+      </div>
+      <div style="font-size:10px;color:var(--txt2);line-height:1.65">${fn.text}</div>
+    </div>`;
+  }).join('');
+}
+
+let EDIT_FN_ID=null;
+function buildFnAcctList(selectedIds){
+  const groups=[
+    {label:'Current Assets',cat:'ca'},{label:'Non-Current Assets',cat:'nca'},{label:'Other Assets',cat:'oa'},
+    {label:'Current Liabilities',cat:'cl'},{label:'Long-Term Liabilities',cat:'ll'},
+  ];
+  let h='';
+  groups.forEach(g=>{
+    const accts=D.accounts.filter(a=>a.cat===g.cat&&!a.par);
+    if(!accts.length)return;
+    h+=`<div style="grid-column:1/-1;font-size:8px;color:var(--txt3);text-transform:uppercase;letter-spacing:1px;margin-top:6px;padding-bottom:2px;border-bottom:1px solid var(--bdr)">${g.label}</div>`;
+    accts.forEach(a=>{
+      const ks=kids(a.id);
+      const showAccts=ks.length?ks:[a];
+      showAccts.forEach(ka=>{
+        const checked=(selectedIds||[]).includes(ka.id);
+        h+=`<label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--txt);cursor:pointer;padding:2px 0">
+          <input type="checkbox" value="${ka.id}" ${checked?'checked':''}> ${ka.name}
+        </label>`;
+      });
+    });
+  });
+  document.getElementById('fn-acct-list').innerHTML=h;
+}
+function openNewFn(){
+  EDIT_FN_ID=null;
+  document.getElementById('fn-modal-title').textContent='Add Footnote';
+  document.getElementById('fn-rf').value='';
+  document.getElementById('fn-tx').value='';
+  document.getElementById('btn-del-fn').style.display='none';
+  buildFnAcctList([]);
+  document.getElementById('m-fn').classList.remove('h');
+}
+function openEditFn(id){
+  const fn=D.footnotes.find(f=>f.id===id);if(!fn)return;
+  EDIT_FN_ID=id;
+  document.getElementById('fn-modal-title').textContent='Edit Footnote';
+  document.getElementById('fn-rf').value=fn.ref;
+  document.getElementById('fn-tx').value=fn.text;
+  document.getElementById('btn-del-fn').style.display='';
+  buildFnAcctList(fn.accounts||[]);
+  document.getElementById('m-fn').classList.remove('h');
+}
+function saveFn(){
+  const ref=document.getElementById('fn-rf').value.trim();
+  const text=document.getElementById('fn-tx').value.trim();
+  if(!ref){alert('Reference required (e.g. "(a)")');return;}
+  const accounts=[...document.querySelectorAll('#fn-acct-list input[type=checkbox]:checked')].map(cb=>cb.value);
+  if(EDIT_FN_ID){
+    const fn=D.footnotes.find(f=>f.id===EDIT_FN_ID);
+    if(fn){fn.ref=ref;fn.text=text;fn.accounts=accounts;}
+  }else{
+    D.footnotes.push({id:'fn-'+uid(),ref,accounts,text});
+  }
+  save();
+  document.getElementById('m-fn').classList.add('h');
+  renderFN();renderBS();
+}
+function deleteFnFromModal(){
+  if(!EDIT_FN_ID)return;
+  if(!confirm('Delete this footnote?'))return;
+  D.footnotes=D.footnotes.filter(f=>f.id!==EDIT_FN_ID);
+  save();
+  document.getElementById('m-fn').classList.add('h');
+  renderFN();renderBS();
+}
+document.getElementById('btn-new-fn').addEventListener('click',openNewFn);
+document.getElementById('btn-cxl-fn').addEventListener('click',()=>document.getElementById('m-fn').classList.add('h'));
+document.getElementById('btn-sv-fn').addEventListener('click',saveFn);
+
+// ─── TICKERS TAB ─────────────────────────────────────────────
+function renderTickersTab(){
+  const el=document.getElementById('inv-body');
+  const tks=D.tickers||[];
+  let h=`<div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+    <button class="btn btn-p btn-sm" onclick="openAddTicker()">+ Add Ticker</button>
+  </div>`;
+  if(!tks.length){el.innerHTML=h+'<div class="empty">No tickers yet</div>';return;}
+  h+='<div class="card"><table class="dt"><thead><tr><th style="text-align:left">Symbol</th><th style="text-align:left">Name</th><th>Source</th><th>Live Price</th></tr></thead><tbody>';
+  tks.forEach(tk=>{
+    const lp=LIVE_PRICES[tk.sym];
+    h+=`<tr onclick="openEditTicker('${tk.id}')" style="cursor:pointer">
+      <td><strong style="color:var(--txt);font-size:13px">${tk.sym}</strong></td>
+      <td style="text-align:left;color:var(--txt2)">${tk.nm}</td>
+      <td style="color:var(--txt3)">${tk.src}</td>
+      <td>${lp!=null?`<span class="pos">$${ff(lp,4)}</span>`:'<span style="color:var(--txt3)">—</span>'}</td>
+    </tr>`;
+  });
+  h+='</tbody></table></div>';
+  el.innerHTML=h;
+}
+
+let EDIT_TK_ID=null;
+function openAddTicker(){
+  EDIT_TK_ID=null;
+  document.getElementById('ticker-modal-title').textContent='Add Ticker';
+  document.getElementById('tk-sym').value='';
+  document.getElementById('tk-nm').value='';
+  document.getElementById('tk-src').value='worker';
+  document.getElementById('tk-manual-price').value='';
+  document.getElementById('tk-manual-row').style.display='none';
+  document.getElementById('tk-preview').textContent='';
+  document.getElementById('btn-del-ticker').style.display='none';
+  document.getElementById('m-ticker').classList.remove('h');
+}
+function openEditTicker(id){
+  EDIT_TK_ID=id;
+  const tk=(D.tickers||[]).find(t=>t.id===id);if(!tk)return;
+  document.getElementById('ticker-modal-title').textContent='Edit Ticker';
+  document.getElementById('tk-sym').value=tk.sym;
+  document.getElementById('tk-nm').value=tk.nm;
+  document.getElementById('tk-src').value=tk.src;
+  document.getElementById('tk-manual-price').value=tk.src==='manual'?tk.livePrice||'':'';
+  document.getElementById('tk-manual-row').style.display=tk.src==='manual'?'block':'none';
+  document.getElementById('tk-preview').textContent='';
+  document.getElementById('btn-del-ticker').style.display='';
+  document.getElementById('m-ticker').classList.remove('h');
+}
+function deleteTickerFromModal(){
+  document.getElementById('m-ticker').classList.add('h');
+  if(EDIT_TK_ID)deleteTicker(EDIT_TK_ID);
+}
+function deleteTicker(id){
+  if(!confirm('Delete this ticker? Positions using it will lose their price data.'))return;
+  D.tickers=(D.tickers||[]).filter(t=>t.id!==id);
+  save();renderInv();
+}
+async function testTickerPrice(){
+  const sym=document.getElementById('tk-sym').value.trim().toUpperCase();
+  const src=document.getElementById('tk-src').value;
+  const prev=document.getElementById('tk-preview');
+  if(!sym){prev.textContent='Enter a symbol first';prev.style.color='var(--red)';return;}
+  prev.textContent='Fetching…';prev.style.color='var(--amber)';
+  try{
+    if(src==='worker'&&WORKER_URL){
+      const r=await fetch(`${WORKER_URL}?symbols=${sym}`);
+      const d=await r.json();
+      const p=d[sym]||d[sym.replace('-USD','')];
+      if(p){prev.textContent=`✓ ${sym} = $${ff(parseFloat(p),4)}`;prev.style.color='var(--green)';}
+      else{prev.textContent='Symbol not found in worker response';prev.style.color='var(--red)';}
+    }else if(src==='manual'){
+      prev.textContent='Manual price — set below';prev.style.color='var(--txt2)';
+    }else{prev.textContent='No worker URL configured — set it via ⚙ API';prev.style.color='var(--amber)';}
+  }catch(e){prev.textContent='Error: '+e.message;prev.style.color='var(--red)';}
+}
+function saveTicker(){
+  const sym=document.getElementById('tk-sym').value.trim().toUpperCase();
+  const nm=document.getElementById('tk-nm').value.trim();
+  const src=document.getElementById('tk-src').value;
+  const livePrice=parseFloat(document.getElementById('tk-manual-price').value)||0;
+  if(!sym||!nm){alert('Symbol and name required');return;}
+  if(!D.tickers)D.tickers=[];
+  if(EDIT_TK_ID){
+    const i=D.tickers.findIndex(t=>t.id===EDIT_TK_ID);
+    if(i>=0)D.tickers[i]={...D.tickers[i],sym,nm,src,livePrice};
+  }else{
+    D.tickers.push({id:'t-'+uid(),sym,nm,src,livePrice,lastFetch:null});
+  }
+  save();
+  document.getElementById('m-ticker').classList.add('h');
+  renderInv();
+}
+document.getElementById('tk-src').addEventListener('change',()=>{
+  document.getElementById('tk-manual-row').style.display=document.getElementById('tk-src').value==='manual'?'block':'none';
+});
+document.getElementById('btn-cxl-ticker').addEventListener('click',()=>document.getElementById('m-ticker').classList.add('h'));
+document.getElementById('btn-sv-ticker').addEventListener('click',saveTicker);
+
+// ─── EXPORT / IMPORT ─────────────────────────────────────────
+function renderExport(){
+  // count entries for display
+  const el=document.getElementById('import-result');
+  if(el)el.textContent='';
+}
+
+function exportJSON(type){
+  let data,filename;
+  const ts=new Date().toISOString().slice(0,10);
+  if(type==='je'){data=D.journalEntries;filename=`northstar-journal-entries-${ts}.json`;}
+  else if(type==='balances'){data=D.balances;filename=`northstar-balances-${ts}.json`;}
+  else{data=D;filename=`northstar-full-backup-${ts}.json`;}
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportCSV(){
+  const rows=[['Date','Period','Description','Category','Account','Debit','Credit','Status']];
+  D.journalEntries.forEach(je=>{
+    je.lines.forEach(l=>{
+      const a=acctById(l.aid);
+      rows.push([je.date,je.period,je.desc,je.cat,a?a.name:l.aid,l.dr||'',l.cr||'',je.status||'cleared']);
+    });
+  });
+  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const ts=new Date().toISOString().slice(0,10);
+  a.href=url;a.download=`northstar-journal-entries-${ts}.csv`;a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importJSON(){
+  const txt=document.getElementById('import-json').value.trim();
+  const el=document.getElementById('import-result');
+  if(!txt){el.textContent='Paste JSON first';el.style.color='var(--red)';return;}
+  if(!confirm('This will overwrite ALL current data with the backup. Are you sure?'))return;
+  try{
+    const parsed=JSON.parse(txt);
+    if(!parsed.accounts||!parsed.journalEntries){el.textContent='Invalid backup — missing required fields';el.style.color='var(--red)';return;}
+    localStorage.setItem(SK,txt);
+    el.textContent='✓ Restored! Reloading…';el.style.color='var(--green)';
+    setTimeout(()=>location.reload(),800);
+  }catch(e){
+    el.textContent='Parse error: '+e.message;el.style.color='var(--red)';
+  }
+}
+
+function printReport(){
+  window.print();
+}
+
+// Close any modal by clicking the backdrop
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.add('h');}));
+
+// ─── INIT ─────────────────────────────────────────────────────
+renderBS();
+renderDep();
+renderML();
+</script>
+</body>
+</html>
